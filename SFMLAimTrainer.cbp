@@ -50,6 +50,7 @@
 			<Add directory="/home/heslo-odin/Documents/SFML_Attempt_2/SFML-3.0.0/lib" />
 		</Linker>
 		<Unit filename="fonts/PLANK___.TTF" />
+		<Unit filename="headers/Random.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="sprites/apple.png" />
 		<Unit filename="sprites/flare_armor.png" />

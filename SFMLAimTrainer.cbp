@@ -52,9 +52,8 @@
 		<Unit filename="fonts/Jersey_15/Jersey15-Regular.ttf" />
 		<Unit filename="headers/Random.h" />
 		<Unit filename="main.cpp" />
-		<Unit filename="sprites/apple.png" />
-		<Unit filename="sprites/flare_armor.png" />
 		<Unit filename="sprites/theTriangle.png" />
+		<Unit filename="sprites/theTriangleFixed.png" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

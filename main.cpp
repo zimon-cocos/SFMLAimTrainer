@@ -55,6 +55,12 @@ struct Target
 
 };
 
+
+float degToRad(int degrees)
+{
+    return degrees*(3.1415926535/180);
+}
+
 int main()
 {
     std::vector<Target> targets;
@@ -67,10 +73,19 @@ int main()
 
     sf::Font font("fonts/Jersey_15/Jersey15-Regular.ttf");
     sf::Text text(font);
+
+    sf::Text angleText(font);
+
     text.setString("It works");
     text.setCharacterSize(24);
     text.setFillColor(sf::Color::Red);
     text.setPosition({width/2 - 80,30});
+
+    angleText.setString("It works");
+    angleText.setCharacterSize(12);
+    angleText.setFillColor(sf::Color::Red);
+    angleText.setPosition({300.0f,300.0f});
+
 
     playerInfo mainInfo;
     sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
@@ -80,7 +95,7 @@ int main()
 
 
     sf::CircleShape circle;
-    circle.setRadius(3.0f);
+    circle.setRadius(9.0f);
     circle.setFillColor(sf::Color::Red);
     circle.setOrigin(circle.getGeometricCenter());
     circle.setPosition({300.0f,300.0f});
@@ -93,13 +108,31 @@ int main()
     radCircle.setOutlineColor(sf::Color::Magenta);
     radCircle.setOutlineThickness(2.0f);
 
+
+
+    //sprite circle radius: 40
+    //origin of sprite circle = sprite.getPosition
+    //temp origin sprite opisanej kruznice na vypocty: [300,300]
+    std::cout << 40*std::sin(90)+300 << '\n';
+    std::cout << 40*std::cos(90)+300 << '\n';
+
+    //X bodu na 90 stupnoch kruznice: 40*sin(90)
+    //Y bodu na 90 s kruznice: 40*cos(90)
+
     std::cout << playerTexture.getSize().x << " je x velkost\n";
+    float ix {0};
+    std::cout << degToRad(ix) << '\n';
+
+
     while(window.isOpen()){
 
+            circle.setPosition({40*std::sin(degToRad(ix+180))+300,40*std::cos(-degToRad(ix+180))+300});
+            --ix;
         //movePlayer(player,mainInfo);
 
 
         rotatePlayer(player,1);
+        //std::cout << player.getRotation().asDegrees() << '\n';
 
 
 
@@ -107,6 +140,7 @@ int main()
 
         sf::Time timeElapsed = clock.getElapsedTime();
 
+        angleText.setString(std::to_string(player.getRotation().asDegrees()));
 
 
         while(const std::optional event = window.pollEvent()){
@@ -191,9 +225,11 @@ int main()
             }
 
         }
+
         window.draw(radCircle);
         window.draw(circle);
         window.draw(player);
+        window.draw(angleText);
         window.draw(text);
         window.display();
     }

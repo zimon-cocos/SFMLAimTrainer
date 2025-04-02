@@ -1,10 +1,12 @@
 # depslib dependency file v1.0
-1743357808 source:/home/heslo-odin/Documents/c++/SFMLAimTrainer/main.cpp
+1743603220 source:/home/heslo-odin/Documents/c++/SFMLAimTrainer/main.cpp
 	<iostream>
 	<SFML/Graphics.hpp>
 	<vector>
 	<cmath>
 	"headers/Random.h"
+	<string>
+	<string_view>
 
 1735558136 /home/heslo-odin/Documents/SFML_Attempt_2/SFML-3.0.0/include/SFML/Graphics.hpp
 	<SFML/Graphics/BlendMode.hpp>

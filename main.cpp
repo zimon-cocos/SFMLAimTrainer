@@ -12,6 +12,32 @@ int score {0};
 int previousScore {0};
 int missed {0};
 
+
+
+
+struct playerInfo
+{
+    float xPlayer {0};
+    float yPlayer {0};
+
+};
+
+
+void movePlayer(sf::Sprite& toMove,playerInfo& Info)
+{
+    toMove.setPosition({Info.xPlayer,Info.yPlayer});
+    ++Info.xPlayer;
+    ++Info.yPlayer;
+}
+
+
+void rotatePlayer(sf::Sprite& toRotate,int degrees)
+{
+    toRotate.rotate(sf::degrees(degrees));
+}
+
+
+
 struct Target
 {
     sf::CircleShape shape;
@@ -28,10 +54,6 @@ struct Target
     bool wasClicked {false};
 
 };
-
-
-
-
 
 int main()
 {
@@ -50,9 +72,37 @@ int main()
     text.setFillColor(sf::Color::Red);
     text.setPosition({width/2 - 80,30});
 
+    playerInfo mainInfo;
+    sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
+    sf::Sprite player(playerTexture);
+    player.setOrigin({25.0f,40.0f});
+    player.setPosition({300.0f,300.0f});
 
 
+    sf::CircleShape circle;
+    circle.setRadius(3.0f);
+    circle.setFillColor(sf::Color::Red);
+    circle.setOrigin(circle.getGeometricCenter());
+    circle.setPosition({300.0f,300.0f});
+
+    sf::CircleShape radCircle;
+    radCircle.setRadius(40.0f);
+    radCircle.setOrigin(radCircle.getGeometricCenter());
+    radCircle.setPosition({300.0f,300.0f});
+    radCircle.setFillColor(sf::Color::Transparent);
+    radCircle.setOutlineColor(sf::Color::Magenta);
+    radCircle.setOutlineThickness(2.0f);
+
+    std::cout << playerTexture.getSize().x << " je x velkost\n";
     while(window.isOpen()){
+
+        //movePlayer(player,mainInfo);
+
+
+        rotatePlayer(player,1);
+
+
+
 
 
         sf::Time timeElapsed = clock.getElapsedTime();
@@ -111,7 +161,7 @@ int main()
 
         }
         text.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
-        if(timeElapsed.asSeconds()>0.2)
+        if(timeElapsed.asSeconds()>2)
         {
             targets.emplace_back(Random::get(0,600),Random::get(0,500));
             clock.restart();
@@ -141,7 +191,9 @@ int main()
             }
 
         }
-
+        window.draw(radCircle);
+        window.draw(circle);
+        window.draw(player);
         window.draw(text);
         window.display();
     }

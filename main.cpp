@@ -15,18 +15,30 @@ int missed {0};
 
 struct playerInfo
 {
-    float xPlayer {0};
-    float yPlayer {0};
+    float xPlayer {300.0f};
+    float yPlayer {300.0f};
 
 };
 
+//circle.setPosition({40*std::sin(degToRad(ix+180))+300,40*std::cos(-degToRad(ix+180))+300});
+float degToRad(int degrees)
+{
+    return degrees*(3.1415926535/180);
+}
 
 void movePlayer(sf::Sprite& toMove,playerInfo& Info)
 {
-    toMove.setPosition({Info.xPlayer,Info.yPlayer});
-    ++Info.xPlayer;
-    ++Info.yPlayer;
+/*
+    toMove.move({40*std::sin(degToRad(toMove.getRotation().asDegrees()+180)) + Info.xPlayer -  toMove.getPosition().x,40*std::cos(degToRad(toMove.getRotation().asDegrees()+180)) + Info.yPlayer - toMove.getPosition().y});
+
+    Info.xPlayer = Info.xPlayer + 40*std::sin(degToRad(toMove.getRotation().asDegrees()+180)) -  toMove.getPosition().x;
+    Info.yPlayer = Info.yPlayer + 40*std::cos(degToRad(toMove.getRotation().asDegrees()+180)) - toMove.getPosition().y;
+*/
+
+
 }
+
+
 
 
 void rotatePlayer(sf::Sprite& toRotate,int degrees)
@@ -55,10 +67,6 @@ struct Target
 
 float secSinceSpawn{0};
 
-float degToRad(int degrees)
-{
-    return degrees*(3.1415926535/180);
-}
 
 int main()
 {
@@ -68,7 +76,7 @@ int main()
 
     //*************!!!!!!!!!!!!!!!!!*********************
     sf::RenderWindow window (sf::VideoMode({width,height}),"Aim Trainer");
-    window.setFramerateLimit(30);
+    window.setFramerateLimit(60);
     //*************!!!!!!!!!!!!!!!!!*********************
 
 
@@ -89,10 +97,15 @@ int main()
 
 
     playerInfo mainInfo;
+    mainInfo.xPlayer = 400.0f;
+    mainInfo.yPlayer = 400.0f;
+    float mVektorX {0};
+    float mVektorY {0};
+
     sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
     sf::Sprite player(playerTexture);
     player.setOrigin({25.0f,40.0f});
-    player.setPosition({300.0f,300.0f});
+    player.setPosition({mainInfo.xPlayer,mainInfo.yPlayer});
 
 
     sf::CircleShape circle;
@@ -104,7 +117,7 @@ int main()
     sf::CircleShape radCircle;
     radCircle.setRadius(40.0f);
     radCircle.setOrigin(radCircle.getGeometricCenter());
-    radCircle.setPosition({300.0f,300.0f});
+    radCircle.setPosition({mainInfo.xPlayer,mainInfo.yPlayer});
     radCircle.setFillColor(sf::Color::Transparent);
     radCircle.setOutlineColor(sf::Color::Magenta);
     radCircle.setOutlineThickness(2.0f);
@@ -120,20 +133,49 @@ int main()
     //X bodu na 90 stupnoch kruznice: 40*sin(90)
     //Y bodu na 90 s kruznice: 40*cos(90)
 
-    std::cout << playerTexture.getSize().x << " je x velkost\n";
     float ix {0};
-    std::cout << degToRad(ix) << '\n';
 
     sf::Clock clock;
     float dt {0};
+    int rotationSpeed {300};
+    int movementSpeed {10};
+
+
+
     while(window.isOpen()){
 
-        circle.setPosition({40*std::sin(degToRad(ix+180))+300,40*std::cos(-degToRad(ix+180))+300});
-        --ix;
+        circle.setPosition({40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer,40*std::cos(-degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer});
+        //ix = ix-1*dt*rotationSpeed;
         //movePlayer(player,mainInfo);
 
 
-        rotatePlayer(player,1);
+
+
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+        {
+            rotatePlayer(player,-1*dt*rotationSpeed);
+        }
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+        {
+            rotatePlayer(player,1*dt*rotationSpeed);
+        }
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+        {
+            //std::cout << "X: " << 40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer << "Y: " << 40*std::cos(-degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer << '\n';
+
+            std::cout << "mVektorX: " << 40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer - mainInfo.xPlayer   << '\n';
+            std::cout << "mVektorY: " << 40*std::cos(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer - mainInfo.yPlayer  << '\n';
+
+
+            player.move({movementSpeed*(40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer - mainInfo.xPlayer)*dt,movementSpeed*(40*std::cos(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer - mainInfo.yPlayer)*dt});
+            mainInfo.xPlayer = mainInfo.xPlayer + 40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer - mainInfo.xPlayer;
+            mainInfo.yPlayer = mainInfo.yPlayer + 40*std::cos(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer - mainInfo.yPlayer;
+
+
+        }
+
+
+
         //std::cout << player.getRotation().asDegrees() << '\n';
 
 

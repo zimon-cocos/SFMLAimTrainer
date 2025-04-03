@@ -20,31 +20,33 @@ struct playerInfo
 
 };
 
-//circle.setPosition({40*std::sin(degToRad(ix+180))+300,40*std::cos(-degToRad(ix+180))+300});
+
+struct projectie
+{
+    sf::RectangleShape shape;
+};
+
+
 float degToRad(int degrees)
 {
     return degrees*(3.1415926535/180);
 }
 
-void movePlayer(sf::Sprite& toMove,playerInfo& Info)
+void movePlayer(sf::Sprite& toMove,playerInfo& Info, float dt,int movementSpeed)
 {
-/*
-    toMove.move({40*std::sin(degToRad(toMove.getRotation().asDegrees()+180)) + Info.xPlayer -  toMove.getPosition().x,40*std::cos(degToRad(toMove.getRotation().asDegrees()+180)) + Info.yPlayer - toMove.getPosition().y});
+            toMove.move({movementSpeed*(40*std::sin(degToRad(-toMove.getRotation().asDegrees()+180))+Info.xPlayer - Info.xPlayer)*dt,
+                        movementSpeed*(40*std::cos(degToRad(-toMove.getRotation().asDegrees()+180))+Info.yPlayer - Info.yPlayer)*dt});
 
-    Info.xPlayer = Info.xPlayer + 40*std::sin(degToRad(toMove.getRotation().asDegrees()+180)) -  toMove.getPosition().x;
-    Info.yPlayer = Info.yPlayer + 40*std::cos(degToRad(toMove.getRotation().asDegrees()+180)) - toMove.getPosition().y;
-*/
-
-
+            Info.xPlayer = Info.xPlayer + 40*std::sin(degToRad(-toMove.getRotation().asDegrees()+180))+Info.xPlayer - Info.xPlayer;
+            Info.yPlayer = Info.yPlayer + 40*std::cos(degToRad(-toMove.getRotation().asDegrees()+180))+Info.yPlayer - Info.yPlayer;
 }
-
-
 
 
 void rotatePlayer(sf::Sprite& toRotate,int degrees)
 {
     toRotate.rotate(sf::degrees(degrees));
 }
+
 
 
 
@@ -144,12 +146,16 @@ int main()
 
     while(window.isOpen()){
 
-        circle.setPosition({40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer,40*std::cos(-degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer});
+        //circle.setPosition({40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer,
+        //                   40*std::cos(-degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer});
         //ix = ix-1*dt*rotationSpeed;
         //movePlayer(player,mainInfo);
 
 
 
+        sf::Time timeElapsed = clock.getElapsedTime();
+        dt = timeElapsed.asSeconds();
+        secSinceSpawn = secSinceSpawn + dt;
 
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
         {
@@ -161,27 +167,9 @@ int main()
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
         {
-            //std::cout << "X: " << 40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer << "Y: " << 40*std::cos(-degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer << '\n';
-
-            std::cout << "mVektorX: " << 40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer - mainInfo.xPlayer   << '\n';
-            std::cout << "mVektorY: " << 40*std::cos(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer - mainInfo.yPlayer  << '\n';
-
-
-            player.move({movementSpeed*(40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer - mainInfo.xPlayer)*dt,movementSpeed*(40*std::cos(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer - mainInfo.yPlayer)*dt});
-            mainInfo.xPlayer = mainInfo.xPlayer + 40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer - mainInfo.xPlayer;
-            mainInfo.yPlayer = mainInfo.yPlayer + 40*std::cos(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer - mainInfo.yPlayer;
-
-
+            movePlayer(player,mainInfo,dt,movementSpeed);
         }
 
-
-
-        //std::cout << player.getRotation().asDegrees() << '\n';
-
-
-        sf::Time timeElapsed = clock.getElapsedTime();
-        dt = timeElapsed.asSeconds();
-        secSinceSpawn = secSinceSpawn + dt;
 
         angleText.setString(std::to_string(player.getRotation().asDegrees()));
 

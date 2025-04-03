@@ -13,8 +13,6 @@ int previousScore {0};
 int missed {0};
 
 
-
-
 struct playerInfo
 {
     float xPlayer {0};
@@ -50,11 +48,12 @@ struct Target
         shape.setFillColor(sf::Color::Green);
     }
 
-    int framesExisted {0};
+    float secondsExisted {0};
     bool wasClicked {false};
 
 };
 
+float secSinceSpawn{0};
 
 float degToRad(int degrees)
 {
@@ -66,21 +65,23 @@ int main()
     std::vector<Target> targets;
     targets.emplace_back(Random::get(0,600),Random::get(0,500));
 
-    sf::RenderWindow window (sf::VideoMode({width,height}),"Aim Trainer");
-    window.setFramerateLimit(60);
 
-    sf::Clock clock;
+    //*************!!!!!!!!!!!!!!!!!*********************
+    sf::RenderWindow window (sf::VideoMode({width,height}),"Aim Trainer");
+    window.setFramerateLimit(30);
+    //*************!!!!!!!!!!!!!!!!!*********************
+
 
     sf::Font font("fonts/Jersey_15/Jersey15-Regular.ttf");
+
     sf::Text text(font);
-
-    sf::Text angleText(font);
-
     text.setString("It works");
     text.setCharacterSize(24);
     text.setFillColor(sf::Color::Red);
     text.setPosition({width/2 - 80,30});
 
+
+    sf::Text angleText(font);
     angleText.setString("It works");
     angleText.setCharacterSize(12);
     angleText.setFillColor(sf::Color::Red);
@@ -123,11 +124,12 @@ int main()
     float ix {0};
     std::cout << degToRad(ix) << '\n';
 
-
+    sf::Clock clock;
+    float dt {0};
     while(window.isOpen()){
 
-            circle.setPosition({40*std::sin(degToRad(ix+180))+300,40*std::cos(-degToRad(ix+180))+300});
-            --ix;
+        circle.setPosition({40*std::sin(degToRad(ix+180))+300,40*std::cos(-degToRad(ix+180))+300});
+        --ix;
         //movePlayer(player,mainInfo);
 
 
@@ -135,13 +137,11 @@ int main()
         //std::cout << player.getRotation().asDegrees() << '\n';
 
 
-
-
-
         sf::Time timeElapsed = clock.getElapsedTime();
+        dt = timeElapsed.asSeconds();
+        secSinceSpawn = secSinceSpawn + dt;
 
         angleText.setString(std::to_string(player.getRotation().asDegrees()));
-
 
         while(const std::optional event = window.pollEvent()){
 
@@ -175,35 +175,24 @@ int main()
                     {
                         targets[i].shape.setFillColor(sf::Color::Red);
                         targets[i].wasClicked = true;
-                        std::cout << targets[i].framesExisted << '\n';
+                        std::cout << targets[i].secondsExisted << '\n';
                         ++score;
 
                     }
                 }
 
 
-
-        /*if(timeElapsed.asSeconds() > 0.2)
-        {
-            std::cout << displayX << ", " << displayY << '\n';
-            std::cout << Random::get(0,100) << '\n';
-            clock.restart();
-        }*/
-
-
-
-
         }
         text.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
-        if(timeElapsed.asSeconds()>2)
+        if(secSinceSpawn>2)
         {
             targets.emplace_back(Random::get(0,600),Random::get(0,500));
-            clock.restart();
+            secSinceSpawn = 0;
         }
 
         for(unsigned int i {0};i<targets.size();++i)
             {
-                if((targets[i].framesExisted >= 300) && !(targets[i].wasClicked))
+                if((targets[i].secondsExisted >= 5) && !(targets[i].wasClicked))
                 {
                     targets[i].wasClicked = true;
                     ++missed;
@@ -221,11 +210,11 @@ int main()
             if(!(targets[i].wasClicked))
             {
                 window.draw(targets[i].shape);
-                ++targets[i].framesExisted;
+                targets[i].secondsExisted += dt;
             }
 
         }
-
+        clock.restart();
         window.draw(radCircle);
         window.draw(circle);
         window.draw(player);

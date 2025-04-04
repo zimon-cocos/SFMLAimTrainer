@@ -13,10 +13,30 @@ int previousScore {0};
 int missed {0};
 
 
+sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
+
 struct playerInfo
 {
     float xPlayer {300.0f};
     float yPlayer {300.0f};
+
+};
+
+
+
+struct player
+{
+    float xPlayer {0};
+    float yPlayer {0};
+    sf::Sprite sprite(playerTexture);
+    player(float xPos, float yPos)
+    {
+
+        sprite.setPosition({xPos,yPos});
+        xPlayer = xPos;
+        yPlayer = yPos;
+    }
+
 
 };
 
@@ -75,7 +95,7 @@ int main()
     std::vector<Target> targets;
     targets.emplace_back(Random::get(0,600),Random::get(0,500));
 
-
+    player Cuh(300,300);
     //*************!!!!!!!!!!!!!!!!!*********************
     sf::RenderWindow window (sf::VideoMode({width,height}),"Aim Trainer");
     window.setFramerateLimit(60);
@@ -104,7 +124,7 @@ int main()
     float mVektorX {0};
     float mVektorY {0};
 
-    sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
+//    sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
     sf::Sprite player(playerTexture);
     player.setOrigin({25.0f,40.0f});
     player.setPosition({mainInfo.xPlayer,mainInfo.yPlayer});
@@ -245,6 +265,7 @@ int main()
 
         }
         clock.restart();
+        window.draw(Cuh.sprite);
         window.draw(radCircle);
         window.draw(circle);
         window.draw(player);

@@ -24,19 +24,26 @@ struct playerInfo
 
 
 
-struct player
+struct Player
 {
     float xPlayer {0};
     float yPlayer {0};
-    sf::Sprite sprite(playerTexture);
-    player(float xPos, float yPos)
+    sf::Sprite sprite{playerTexture};
+    Player(float xPos, float yPos)
     {
 
         sprite.setPosition({xPos,yPos});
         xPlayer = xPos;
         yPlayer = yPos;
+        sprite.setOrigin({25.0f,40.0f});
     }
 
+
+    void rotatePlayer(int degrees)
+    {
+        //sprite.rotate(-1*dt*(sf::degrees(degrees)));
+        sprite.rotate(sf::degrees(degrees));
+    }
 
 };
 
@@ -92,10 +99,16 @@ float secSinceSpawn{0};
 
 int main()
 {
+
+
+
+
+
+
     std::vector<Target> targets;
     targets.emplace_back(Random::get(0,600),Random::get(0,500));
 
-    player Cuh(300,300);
+    Player Cuh(300,300);
     //*************!!!!!!!!!!!!!!!!!*********************
     sf::RenderWindow window (sf::VideoMode({width,height}),"Aim Trainer");
     window.setFramerateLimit(60);
@@ -180,6 +193,7 @@ int main()
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
         {
             rotatePlayer(player,-1*dt*rotationSpeed);
+            Cuh.rotatePlayer(1);
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
         {

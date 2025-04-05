@@ -6,6 +6,8 @@
 #include "headers/Objects.h"
 #include <string>
 #include <string_view>
+#include <algorithm>
+#include <cstdlib>
 
 constexpr unsigned int width {600};
 constexpr unsigned int height {600};
@@ -56,13 +58,14 @@ struct Player
 
 struct Projectile
 {
-    sf::RectangleShape shape;
+    sf::CircleShape shape;
     float xProjectile {0};
     float yProjectile {0};
+    float lifetime {0};
 
     Projectile(float xPos, float yPos,sf::Angle Rotation)
     {
-        shape.setSize({5.0f,30.0f});
+        shape.setRadius(2.0f);
         shape.setOrigin(shape.getGeometricCenter());
         shape.setFillColor(sf::Color::Red);
         shape.setPosition({xPos,yPos});
@@ -85,13 +88,16 @@ struct Projectile
 struct Target
 {
     sf::CircleShape shape;
-
+    float xTarget {0};
+    float yTarget {0};
     Target(float x, float y)
     {
         shape.setPosition({x,y});
         shape.setRadius(30.0f);
         shape.setOrigin(shape.getGeometricCenter());
         shape.setFillColor(sf::Color::Green);
+        xTarget = x;
+        yTarget = y;
     }
 
     float secondsExisted {0};
@@ -100,13 +106,11 @@ struct Target
 };
 
     float secSinceSpawn{0};
+    float fireDelay{0.5};
 
 
 int main()
 {
-
-
-
 
     std::vector<Target> targets;
     targets.emplace_back(Random::get(0,600),Random::get(0,500));
@@ -122,13 +126,13 @@ int main()
 
 
     std::vector<Projectile> projectiles;
-
-    sf::RectangleShape gunRect;
-    gunRect.setSize({5.0f,30.0f});
+    float hitAmount{0};
+    /*sf::CircleShape gunRect;
+    gunRect.setRadius(15.0f);
     gunRect.setFillColor(sf::Color::Red);
     gunRect.setOrigin(gunRect.getGeometricCenter());
     gunRect.setPosition({pSprite.xPlayer,pSprite.yPlayer});
-
+*/
     //*************!!!!!!!!!!!!!!!!!*********************
     sf::RenderWindow window (sf::VideoMode({width,height}),"Aim Trainer");
     window.setFramerateLimit(60);
@@ -155,8 +159,10 @@ int main()
 
     sf::Clock clock;
     float dt {0};
+    float maxLifetime {5};
     int rotationSpeed {300};
     int movementSpeed {10};
+
 
 
 
@@ -165,6 +171,7 @@ int main()
         sf::Time timeElapsed = clock.getElapsedTime();
         dt = timeElapsed.asSeconds();
         secSinceSpawn = secSinceSpawn + dt;
+        fireDelay = fireDelay - dt;
 
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
         {
@@ -182,21 +189,21 @@ int main()
 
         pCircle.setPosition({pSprite.xPlayer,pSprite.yPlayer});
         float spriteRotation = pSprite.sprite.getRotation().asDegrees();
-        std::cout << spriteRotation << '\n';
+        //std::cout << spriteRotation << '\n';
         float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
         float yGunRect = 40*std::cos(-degToRad(spriteRotation+180))+pSprite.yPlayer;
-        gunRect.setPosition({xGunRect,yGunRect});
-        gunRect.setRotation(pSprite.sprite.getRotation());
+        //gunRect.setPosition({xGunRect,yGunRect});
+        //gunRect.setRotation(pSprite.sprite.getRotation());
 
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && fireDelay<= 0)
         {
             projectiles.emplace_back(Projectile(xGunRect,yGunRect,pSprite.sprite.getRotation()));
-
+            fireDelay = 0.5;
         }
 
 
 
-        std::cout << projectiles.size() << '\n';
+        //std::cout << projectiles.size() << '\n';
         angleText.setString(std::to_string(pSprite.sprite.getRotation().asDegrees()));
 
         while(const std::optional event = window.pollEvent()){
@@ -250,6 +257,28 @@ int main()
                 }
             }
 
+        for(unsigned int i {0}; i<projectiles.size();++i)
+            {
+                projectiles[i].moveProjectile(dt,30);
+            }
+
+
+
+
+       for(unsigned int i {0}; i<targets.size(); ++i)
+            {
+            for(unsigned int j {0}; j<projectiles.size();++j)
+                {
+                    //if(pow((30 - 2),2) <= pow((targets[i].xTarget - projectiles[j].xProjectile),2) + pow((targets[i].yTarget - projectiles[j].yProjectile),2) <= pow((30+2),2))
+                    if(projectiles[j].shape.getGlobalBounds().findIntersection(targets[i].shape.getGlobalBounds()))
+                        {
+                            std::cout << "Hit\n";
+                            ++hitAmount;
+                            std::cout << hitAmount << '\n';
+                            targets[i].wasClicked = true;
+                        }
+                }
+            }
 
         //Render
         window.clear(sf::Color::White);
@@ -263,26 +292,43 @@ int main()
                 window.draw(targets[i].shape);
                 targets[i].secondsExisted += dt;
             }
-
-
-
-
         }
-        for(unsigned int i {0}; i<projectiles.size();++i)
-            {
-                projectiles[i].moveProjectile(dt,30);
-            }
-
 
         for(unsigned int i {0};i<projectiles.size();++i)
         {
-            window.draw(projectiles[i].shape);
+            projectiles[i].lifetime = projectiles[i].lifetime + dt;
+            if(projectiles[i].lifetime <= maxLifetime)
+            {
+                window.draw(projectiles[i].shape);
+            }
+
         }
+
+
+        //Ai slop//
+        projectiles.erase(
+            std::remove_if(
+                projectiles.begin(),
+                projectiles.end(),
+                [](const Projectile& proj) { return proj.lifetime > 5.0f; }
+            ),
+            projectiles.end()
+        );
+
+
+        targets.erase(
+            std::remove_if(
+                targets.begin(),
+                targets.end(),
+                [](const Target& target) { return target.wasClicked; }
+            ),
+            targets.end()
+        );
+        //Ai slop//
 
         clock.restart();
         window.draw(pSprite.sprite);
         window.draw(pCircle);
-        window.draw(gunRect);
         window.draw(angleText);
         window.draw(text);
         window.display();

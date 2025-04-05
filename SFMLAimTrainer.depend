@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1743843531 source:/home/heslo-odin/Documents/c++/SFMLAimTrainer/main.cpp
+1743878088 source:/home/heslo-odin/Documents/c++/SFMLAimTrainer/main.cpp
 	<iostream>
 	<SFML/Graphics.hpp>
 	<vector>
@@ -8,6 +8,8 @@
 	"headers/Objects.h"
 	<string>
 	<string_view>
+	<algorithm>
+	<cstdlib>
 
 1735558136 /home/heslo-odin/Documents/SFML_Attempt_2/SFML-3.0.0/include/SFML/Graphics.hpp
 	<SFML/Graphics/BlendMode.hpp>

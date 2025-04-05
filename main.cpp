@@ -23,6 +23,10 @@ struct playerInfo
 };
 
 
+float degToRad(int degrees)
+{
+    return degrees*(3.1415926535/180);
+}
 
 struct Player
 {
@@ -39,10 +43,19 @@ struct Player
     }
 
 
-    void rotatePlayer(int degrees)
+    void rotatePlayer(int degrees,float dt,int rotationSpeed)
     {
-        //sprite.rotate(-1*dt*(sf::degrees(degrees)));
-        sprite.rotate(sf::degrees(degrees));
+        sprite.rotate(dt*rotationSpeed*(sf::degrees(degrees)));
+        //sprite.rotate(sf::degrees(degrees));
+    }
+
+    void movePlayer(float dt,int movementSpeed)
+    {
+            sprite.move({movementSpeed*(40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180))+xPlayer - xPlayer)*dt,
+                        movementSpeed*(40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180))+yPlayer - yPlayer)*dt});
+
+            xPlayer = xPlayer + 40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180))+xPlayer - xPlayer;
+            yPlayer = yPlayer + 40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180))+yPlayer - yPlayer;
     }
 
 };
@@ -54,10 +67,6 @@ struct projectie
 };
 
 
-float degToRad(int degrees)
-{
-    return degrees*(3.1415926535/180);
-}
 
 void movePlayer(sf::Sprite& toMove,playerInfo& Info, float dt,int movementSpeed)
 {
@@ -94,7 +103,7 @@ struct Target
 
 };
 
-float secSinceSpawn{0};
+    float secSinceSpawn{0};
 
 
 int main()
@@ -111,7 +120,7 @@ int main()
     Player Cuh(300,300);
     //*************!!!!!!!!!!!!!!!!!*********************
     sf::RenderWindow window (sf::VideoMode({width,height}),"Aim Trainer");
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(30);
     //*************!!!!!!!!!!!!!!!!!*********************
 
 
@@ -126,9 +135,9 @@ int main()
 
     sf::Text angleText(font);
     angleText.setString("It works");
-    angleText.setCharacterSize(12);
+    angleText.setCharacterSize(30);
     angleText.setFillColor(sf::Color::Red);
-    angleText.setPosition({300.0f,300.0f});
+    angleText.setPosition({150.0f,150.0f});
 
 
     playerInfo mainInfo;
@@ -156,8 +165,6 @@ int main()
     radCircle.setFillColor(sf::Color::Transparent);
     radCircle.setOutlineColor(sf::Color::Magenta);
     radCircle.setOutlineThickness(2.0f);
-
-
 
     //sprite circle radius: 40
     //origin of sprite circle = sprite.getPosition
@@ -193,19 +200,22 @@ int main()
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
         {
             rotatePlayer(player,-1*dt*rotationSpeed);
-            Cuh.rotatePlayer(1);
+            Cuh.rotatePlayer(-1,dt,rotationSpeed);
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
         {
             rotatePlayer(player,1*dt*rotationSpeed);
+            Cuh.rotatePlayer(1,dt,rotationSpeed);
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
         {
             movePlayer(player,mainInfo,dt,movementSpeed);
+            Cuh.movePlayer(dt,movementSpeed);
+
         }
 
 
-        angleText.setString(std::to_string(player.getRotation().asDegrees()));
+        angleText.setString(std::to_string(Cuh.sprite.getRotation().asDegrees()));
 
         while(const std::optional event = window.pollEvent()){
 

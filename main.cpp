@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include "headers/Random.h"
+#include "headers/Objects.h"
 #include <string>
 #include <string_view>
 
@@ -13,20 +14,14 @@ int previousScore {0};
 int missed {0};
 
 
-sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
-
-struct playerInfo
-{
-    float xPlayer {300.0f};
-    float yPlayer {300.0f};
-
-};
 
 
 float degToRad(int degrees)
 {
     return degrees*(3.1415926535/180);
 }
+
+sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
 
 struct Player
 {
@@ -46,45 +41,46 @@ struct Player
     void rotatePlayer(int degrees,float dt,int rotationSpeed)
     {
         sprite.rotate(dt*rotationSpeed*(sf::degrees(degrees)));
-        //sprite.rotate(sf::degrees(degrees));
     }
 
     void movePlayer(float dt,int movementSpeed)
     {
             sprite.move({movementSpeed*(40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180))+xPlayer - xPlayer)*dt,
                         movementSpeed*(40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180))+yPlayer - yPlayer)*dt});
-
-            xPlayer = xPlayer + 40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180))+xPlayer - xPlayer;
-            yPlayer = yPlayer + 40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180))+yPlayer - yPlayer;
+            xPlayer = sprite.getPosition().x;
+            yPlayer = sprite.getPosition().y;
     }
 
 };
 
 
-struct projectie
+struct Projectile
 {
     sf::RectangleShape shape;
+    float xProjectile {0};
+    float yProjectile {0};
+
+    Projectile(float xPos, float yPos,sf::Angle Rotation)
+    {
+        shape.setSize({5.0f,30.0f});
+        shape.setOrigin(shape.getGeometricCenter());
+        shape.setFillColor(sf::Color::Red);
+        shape.setPosition({xPos,yPos});
+        shape.setRotation(Rotation);
+        xProjectile = xPos;
+        yProjectile = yPos;
+
+
+    }
+    void moveProjectile(float dt,int movementSpeed)
+    {
+            shape.move({movementSpeed*(40*std::sin(degToRad(-shape.getRotation().asDegrees()+180))+xProjectile - xProjectile)*dt,
+                        movementSpeed*(40*std::cos(degToRad(-shape.getRotation().asDegrees()+180))+yProjectile - yProjectile)*dt});
+            xProjectile = shape.getPosition().x;
+            yProjectile = shape.getPosition().y;
+    }
+
 };
-
-
-
-void movePlayer(sf::Sprite& toMove,playerInfo& Info, float dt,int movementSpeed)
-{
-            toMove.move({movementSpeed*(40*std::sin(degToRad(-toMove.getRotation().asDegrees()+180))+Info.xPlayer - Info.xPlayer)*dt,
-                        movementSpeed*(40*std::cos(degToRad(-toMove.getRotation().asDegrees()+180))+Info.yPlayer - Info.yPlayer)*dt});
-
-            Info.xPlayer = Info.xPlayer + 40*std::sin(degToRad(-toMove.getRotation().asDegrees()+180))+Info.xPlayer - Info.xPlayer;
-            Info.yPlayer = Info.yPlayer + 40*std::cos(degToRad(-toMove.getRotation().asDegrees()+180))+Info.yPlayer - Info.yPlayer;
-}
-
-
-void rotatePlayer(sf::Sprite& toRotate,int degrees)
-{
-    toRotate.rotate(sf::degrees(degrees));
-}
-
-
-
 
 struct Target
 {
@@ -112,15 +108,30 @@ int main()
 
 
 
-
-
     std::vector<Target> targets;
     targets.emplace_back(Random::get(0,600),Random::get(0,500));
+    Player pSprite(300,300);
 
-    Player Cuh(300,300);
+    sf::CircleShape pCircle;
+    pCircle.setRadius(40.0f);
+    pCircle.setFillColor(sf::Color::Transparent);
+    pCircle.setOutlineThickness(2.0f);
+    pCircle.setOutlineColor(sf::Color::Magenta);
+    pCircle.setOrigin(pCircle.getGeometricCenter());
+    pCircle.setPosition({pSprite.xPlayer,pSprite.yPlayer});
+
+
+    std::vector<Projectile> projectiles;
+
+    sf::RectangleShape gunRect;
+    gunRect.setSize({5.0f,30.0f});
+    gunRect.setFillColor(sf::Color::Red);
+    gunRect.setOrigin(gunRect.getGeometricCenter());
+    gunRect.setPosition({pSprite.xPlayer,pSprite.yPlayer});
+
     //*************!!!!!!!!!!!!!!!!!*********************
     sf::RenderWindow window (sf::VideoMode({width,height}),"Aim Trainer");
-    window.setFramerateLimit(30);
+    window.setFramerateLimit(60);
     //*************!!!!!!!!!!!!!!!!!*********************
 
 
@@ -140,42 +151,7 @@ int main()
     angleText.setPosition({150.0f,150.0f});
 
 
-    playerInfo mainInfo;
-    mainInfo.xPlayer = 400.0f;
-    mainInfo.yPlayer = 400.0f;
-    float mVektorX {0};
-    float mVektorY {0};
 
-//    sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
-    sf::Sprite player(playerTexture);
-    player.setOrigin({25.0f,40.0f});
-    player.setPosition({mainInfo.xPlayer,mainInfo.yPlayer});
-
-
-    sf::CircleShape circle;
-    circle.setRadius(9.0f);
-    circle.setFillColor(sf::Color::Red);
-    circle.setOrigin(circle.getGeometricCenter());
-    circle.setPosition({300.0f,300.0f});
-
-    sf::CircleShape radCircle;
-    radCircle.setRadius(40.0f);
-    radCircle.setOrigin(radCircle.getGeometricCenter());
-    radCircle.setPosition({mainInfo.xPlayer,mainInfo.yPlayer});
-    radCircle.setFillColor(sf::Color::Transparent);
-    radCircle.setOutlineColor(sf::Color::Magenta);
-    radCircle.setOutlineThickness(2.0f);
-
-    //sprite circle radius: 40
-    //origin of sprite circle = sprite.getPosition
-    //temp origin sprite opisanej kruznice na vypocty: [300,300]
-    std::cout << 40*std::sin(90)+300 << '\n';
-    std::cout << 40*std::cos(90)+300 << '\n';
-
-    //X bodu na 90 stupnoch kruznice: 40*sin(90)
-    //Y bodu na 90 s kruznice: 40*cos(90)
-
-    float ix {0};
 
     sf::Clock clock;
     float dt {0};
@@ -186,36 +162,42 @@ int main()
 
     while(window.isOpen()){
 
-        //circle.setPosition({40*std::sin(degToRad(-player.getRotation().asDegrees()+180))+mainInfo.xPlayer,
-        //                   40*std::cos(-degToRad(-player.getRotation().asDegrees()+180))+mainInfo.yPlayer});
-        //ix = ix-1*dt*rotationSpeed;
-        //movePlayer(player,mainInfo);
-
-
-
         sf::Time timeElapsed = clock.getElapsedTime();
         dt = timeElapsed.asSeconds();
         secSinceSpawn = secSinceSpawn + dt;
 
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
         {
-            rotatePlayer(player,-1*dt*rotationSpeed);
-            Cuh.rotatePlayer(-1,dt,rotationSpeed);
+            pSprite.rotatePlayer(-1,dt,rotationSpeed);
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
         {
-            rotatePlayer(player,1*dt*rotationSpeed);
-            Cuh.rotatePlayer(1,dt,rotationSpeed);
+            pSprite.rotatePlayer(1,dt,rotationSpeed);
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
         {
-            movePlayer(player,mainInfo,dt,movementSpeed);
-            Cuh.movePlayer(dt,movementSpeed);
+            pSprite.movePlayer(dt,movementSpeed);
+
+        }
+
+        pCircle.setPosition({pSprite.xPlayer,pSprite.yPlayer});
+        float spriteRotation = pSprite.sprite.getRotation().asDegrees();
+        std::cout << spriteRotation << '\n';
+        float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
+        float yGunRect = 40*std::cos(-degToRad(spriteRotation+180))+pSprite.yPlayer;
+        gunRect.setPosition({xGunRect,yGunRect});
+        gunRect.setRotation(pSprite.sprite.getRotation());
+
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+        {
+            projectiles.emplace_back(Projectile(xGunRect,yGunRect,pSprite.sprite.getRotation()));
 
         }
 
 
-        angleText.setString(std::to_string(Cuh.sprite.getRotation().asDegrees()));
+
+        std::cout << projectiles.size() << '\n';
+        angleText.setString(std::to_string(pSprite.sprite.getRotation().asDegrees()));
 
         while(const std::optional event = window.pollEvent()){
 
@@ -234,10 +216,6 @@ int main()
 
 
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
-            float xPos  = sf::Mouse::getPosition(window).x;
-            float yPos = sf::Mouse::getPosition(window).y;
-            int displayX = xPos;
-            int displayY = yPos;
 
             auto mousePos = sf::Mouse::getPosition(window);
             auto transMousePos = window.mapPixelToCoords(mousePos);
@@ -254,7 +232,6 @@ int main()
 
                     }
                 }
-
 
         }
         text.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
@@ -287,12 +264,25 @@ int main()
                 targets[i].secondsExisted += dt;
             }
 
+
+
+
         }
+        for(unsigned int i {0}; i<projectiles.size();++i)
+            {
+                projectiles[i].moveProjectile(dt,30);
+            }
+
+
+        for(unsigned int i {0};i<projectiles.size();++i)
+        {
+            window.draw(projectiles[i].shape);
+        }
+
         clock.restart();
-        window.draw(Cuh.sprite);
-        window.draw(radCircle);
-        window.draw(circle);
-        window.draw(player);
+        window.draw(pSprite.sprite);
+        window.draw(pCircle);
+        window.draw(gunRect);
         window.draw(angleText);
         window.draw(text);
         window.display();

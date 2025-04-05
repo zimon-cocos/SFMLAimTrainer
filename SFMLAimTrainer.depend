@@ -1,10 +1,11 @@
 # depslib dependency file v1.0
-1743837314 source:/home/heslo-odin/Documents/c++/SFMLAimTrainer/main.cpp
+1743843531 source:/home/heslo-odin/Documents/c++/SFMLAimTrainer/main.cpp
 	<iostream>
 	<SFML/Graphics.hpp>
 	<vector>
 	<cmath>
 	"headers/Random.h"
+	"headers/Objects.h"
 	<string>
 	<string_view>
 
@@ -520,4 +521,6 @@
 1743357142 /home/heslo-odin/Documents/c++/SFMLAimTrainer/headers/Random.h
 	<chrono>
 	<random>
+
+1743841834 /home/heslo-odin/Documents/c++/SFMLAimTrainer/headers/Objects.h
 

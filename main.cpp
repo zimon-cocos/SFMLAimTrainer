@@ -29,6 +29,7 @@ struct Player
 {
     float xPlayer {0};
     float yPlayer {0};
+    bool blewUp {0};
     sf::Sprite sprite{playerTexture};
     Player(float xPos, float yPos)
     {
@@ -62,6 +63,7 @@ struct Projectile
     float xProjectile {0};
     float yProjectile {0};
     float lifetime {0};
+    bool blickSum {false};
 
     Projectile(float xPos, float yPos,sf::Angle Rotation)
     {
@@ -85,11 +87,15 @@ struct Projectile
 
 };
 
+
+float targSpeed {0.5};
 struct Target
 {
     sf::CircleShape shape;
     float xTarget {0};
     float yTarget {0};
+    float xMoveVector {0};
+    float yMoveVector {0};
     Target(float x, float y)
     {
         shape.setPosition({x,y});
@@ -103,6 +109,11 @@ struct Target
     float secondsExisted {0};
     bool wasClicked {false};
 
+
+    void moveTarget(float dt)
+    {
+        shape.move({xMoveVector*dt*targSpeed,yMoveVector*dt*targSpeed});
+    }
 };
 
     float secSinceSpawn{0};
@@ -122,7 +133,16 @@ int main()
     pCircle.setOutlineThickness(2.0f);
     pCircle.setOutlineColor(sf::Color::Magenta);
     pCircle.setOrigin(pCircle.getGeometricCenter());
-    pCircle.setPosition({pSprite.xPlayer,pSprite.yPlayer});
+
+
+    constexpr float spawnRadius {750.0f};
+    sf::CircleShape astSpawn;
+    astSpawn.setRadius(spawnRadius);
+    astSpawn.setFillColor(sf::Color::Transparent);
+    astSpawn.setOutlineColor(sf::Color::Blue);
+    astSpawn.setOutlineThickness(2.0f);
+    astSpawn.setOrigin(astSpawn.getGeometricCenter());
+
 
 
     std::vector<Projectile> projectiles;
@@ -166,6 +186,7 @@ int main()
 
 
 
+
     while(window.isOpen()){
 
         sf::Time timeElapsed = clock.getElapsedTime();
@@ -188,6 +209,7 @@ int main()
         }
 
         pCircle.setPosition({pSprite.xPlayer,pSprite.yPlayer});
+        astSpawn.setPosition({pSprite.xPlayer,pSprite.yPlayer});
         float spriteRotation = pSprite.sprite.getRotation().asDegrees();
         //std::cout << spriteRotation << '\n';
         float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
@@ -242,9 +264,20 @@ int main()
 
         }
         text.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
-        if(secSinceSpawn>2)
+
+        if(secSinceSpawn>0.5)
         {
-            targets.emplace_back(Random::get(0,600),Random::get(0,500));
+            //targets.emplace_back(Random::get(0,600),Random::get(0,500));
+            //float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
+            //float yGunRect = 40*std::cos(-degToRad(spriteRotation+180))+pSprite.yPlayer;
+            int ranDegree = Random::get(0,360);
+            targets.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+pSprite.xPlayer,spawnRadius*std::cos(degToRad(ranDegree))+pSprite.yPlayer);
+
+
+            targets.back().xMoveVector = (pSprite.xPlayer - targets.back().xTarget);
+            targets.back().yMoveVector = (pSprite.yPlayer - targets.back().yTarget);
+            std::cout << targets.back().xMoveVector << " , " << targets.back().yMoveVector << '\n';
+
             secSinceSpawn = 0;
         }
 
@@ -263,20 +296,35 @@ int main()
             }
 
 
+        for(unsigned int i {0}; i<targets.size();++i)
+            {
+                targets[i].moveTarget(dt);
+            }
 
 
        for(unsigned int i {0}; i<targets.size(); ++i)
             {
             for(unsigned int j {0}; j<projectiles.size();++j)
                 {
-                    //if(pow((30 - 2),2) <= pow((targets[i].xTarget - projectiles[j].xProjectile),2) + pow((targets[i].yTarget - projectiles[j].yProjectile),2) <= pow((30+2),2))
-                    if(projectiles[j].shape.getGlobalBounds().findIntersection(targets[i].shape.getGlobalBounds()))
+                    if(projectiles[j].shape.getGlobalBounds().findIntersection(targets[i].shape.getGlobalBounds()) && !projectiles[j].blickSum)
                         {
                             std::cout << "Hit\n";
                             ++hitAmount;
+                            ++score;
                             std::cout << hitAmount << '\n';
                             targets[i].wasClicked = true;
+                            projectiles[j].blickSum = true;
+
                         }
+                    if(!pSprite.blewUp)
+                    {
+                        if(targets[i].shape.getGlobalBounds().findIntersection(pSprite.sprite.getGlobalBounds()))
+                            {
+                                pSprite.blewUp = true;
+                                std::cout << "Kaboom\n";
+                            }
+                    }
+
                 }
             }
 
@@ -297,7 +345,7 @@ int main()
         for(unsigned int i {0};i<projectiles.size();++i)
         {
             projectiles[i].lifetime = projectiles[i].lifetime + dt;
-            if(projectiles[i].lifetime <= maxLifetime)
+            if(projectiles[i].lifetime <= maxLifetime && !projectiles[i].blickSum)
             {
                 window.draw(projectiles[i].shape);
             }
@@ -328,6 +376,7 @@ int main()
 
         clock.restart();
         window.draw(pSprite.sprite);
+        window.draw(astSpawn);
         window.draw(pCircle);
         window.draw(angleText);
         window.draw(text);

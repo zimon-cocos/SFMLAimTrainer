@@ -4,33 +4,42 @@
 #include <cmath>
 #include "headers/Random.h"
 #include "headers/Objects.h"
+#include "headers/Functions.h"
+#include "headers/ConstantsOrAttributes.h"
 #include <string>
 #include <string_view>
 #include <algorithm>
 #include <cstdlib>
 
-constexpr unsigned int width {600};
-constexpr unsigned int height {600};
-int score {0};
-int previousScore {0};
-int missed {0};
 
 
 
-
-float degToRad(int degrees)
+/*float degToRad(int degrees)
 {
     return degrees*(3.1415926535/180);
-}
+}*/
 
-sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
+//sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
 
-struct Player
+//sf::Texture shipTexture("sprites/ship_sheet.png");
+
+
+/*if(!texture.loadFromFile("sprites/ship_sheet.png"))
+{
+    std::cerr << "Nenacita ti lod" std::endl;
+    return -1
+}*/
+
+
+
+/*struct Player
 {
     float xPlayer {0};
     float yPlayer {0};
     bool blewUp {0};
-    sf::Sprite sprite{playerTexture};
+    sf::Sprite sprite{shipTexture};
+    int texWidth {0};
+    float texTimer {0};
     Player(float xPos, float yPos)
     {
 
@@ -54,10 +63,10 @@ struct Player
             yPlayer = sprite.getPosition().y;
     }
 
-};
+};*/
 
 
-struct Projectile
+/*struct Projectile
 {
     sf::CircleShape shape;
     float xProjectile {0};
@@ -86,16 +95,17 @@ struct Projectile
     }
 
 };
+*/
 
 
-float targSpeed {0.5};
-struct Target
+/*struct Target
 {
     sf::CircleShape shape;
     float xTarget {0};
     float yTarget {0};
     float xMoveVector {0};
     float yMoveVector {0};
+    float targSpeed {0.5};
     Target(float x, float y)
     {
         shape.setPosition({x,y});
@@ -114,10 +124,10 @@ struct Target
     {
         shape.move({xMoveVector*dt*targSpeed,yMoveVector*dt*targSpeed});
     }
-};
+};*/
 
     float secSinceSpawn{0};
-    float fireDelay{0.5};
+
 
 
 int main()
@@ -126,14 +136,15 @@ int main()
     std::vector<Target> targets;
     targets.emplace_back(Random::get(0,600),Random::get(0,500));
     Player pSprite(300,300);
+    pSprite.sprite.setTextureRect({ {0, 0}, {50, 80} });
 
     sf::CircleShape pCircle;
-    pCircle.setRadius(40.0f);
+   /* pCircle.setRadius(40.0f);
     pCircle.setFillColor(sf::Color::Transparent);
     pCircle.setOutlineThickness(2.0f);
     pCircle.setOutlineColor(sf::Color::Magenta);
     pCircle.setOrigin(pCircle.getGeometricCenter());
-
+*/
 
     constexpr float spawnRadius {750.0f};
     sf::CircleShape astSpawn;
@@ -155,7 +166,7 @@ int main()
 */
     //*************!!!!!!!!!!!!!!!!!*********************
     sf::RenderWindow window (sf::VideoMode({width,height}),"Aim Trainer");
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(framerate);
     //*************!!!!!!!!!!!!!!!!!*********************
 
 
@@ -168,24 +179,8 @@ int main()
     text.setPosition({width/2 - 80,30});
 
 
-    sf::Text angleText(font);
-    angleText.setString("It works");
-    angleText.setCharacterSize(30);
-    angleText.setFillColor(sf::Color::Red);
-    angleText.setPosition({150.0f,150.0f});
-
-
-
-
     sf::Clock clock;
     float dt {0};
-    float maxLifetime {5};
-    int rotationSpeed {300};
-    int movementSpeed {10};
-
-
-
-
 
     while(window.isOpen()){
 
@@ -214,6 +209,7 @@ int main()
         //std::cout << spriteRotation << '\n';
         float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
         float yGunRect = 40*std::cos(-degToRad(spriteRotation+180))+pSprite.yPlayer;
+
         //gunRect.setPosition({xGunRect,yGunRect});
         //gunRect.setRotation(pSprite.sprite.getRotation());
 
@@ -222,11 +218,6 @@ int main()
             projectiles.emplace_back(Projectile(xGunRect,yGunRect,pSprite.sprite.getRotation()));
             fireDelay = 0.5;
         }
-
-
-
-        //std::cout << projectiles.size() << '\n';
-        angleText.setString(std::to_string(pSprite.sprite.getRotation().asDegrees()));
 
         while(const std::optional event = window.pollEvent()){
 
@@ -265,7 +256,7 @@ int main()
         }
         text.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
 
-        if(secSinceSpawn>0.5)
+        if(secSinceSpawn>2)
         {
             //targets.emplace_back(Random::get(0,600),Random::get(0,500));
             //float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
@@ -273,10 +264,8 @@ int main()
             int ranDegree = Random::get(0,360);
             targets.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+pSprite.xPlayer,spawnRadius*std::cos(degToRad(ranDegree))+pSprite.yPlayer);
 
-
             targets.back().xMoveVector = (pSprite.xPlayer - targets.back().xTarget);
             targets.back().yMoveVector = (pSprite.yPlayer - targets.back().yTarget);
-            std::cout << targets.back().xMoveVector << " , " << targets.back().yMoveVector << '\n';
 
             secSinceSpawn = 0;
         }
@@ -316,7 +305,10 @@ int main()
                             projectiles[j].blickSum = true;
 
                         }
-                    if(!pSprite.blewUp)
+
+
+                }
+                if(!pSprite.blewUp)
                     {
                         if(targets[i].shape.getGlobalBounds().findIntersection(pSprite.sprite.getGlobalBounds()))
                             {
@@ -324,9 +316,44 @@ int main()
                                 std::cout << "Kaboom\n";
                             }
                     }
-
-                }
             }
+
+
+
+    //ANIMACIE
+
+    //Sprajtu:
+    pSprite.texTimer += dt;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+    {
+        if(pSprite.texTimer >= 0.05)
+        {
+            pSprite.texWidth += 50;
+            std::cout << pSprite.texWidth << '\n';
+
+            if(pSprite.texWidth >= shipTexture.getSize().x)
+            {
+                pSprite.texWidth = 0;
+            }
+            if(pSprite.texWidth < shipTexture.getSize().x)
+            {
+
+                std::cout << pSprite.texWidth << '\n';
+                pSprite.sprite.setTextureRect({ {pSprite.texWidth,0} , {50,80} });
+            }
+
+
+
+            pSprite.texTimer = 0;
+        }
+    }
+    else
+    {
+        pSprite.sprite.setTextureRect({{0,0},{50,80}});
+        pSprite.texWidth = 0;
+    }
+
+
 
         //Render
         window.clear(sf::Color::White);
@@ -358,7 +385,7 @@ int main()
             std::remove_if(
                 projectiles.begin(),
                 projectiles.end(),
-                [](const Projectile& proj) { return proj.lifetime > 5.0f; }
+                [](const Projectile& proj) { return proj.lifetime > 3.0f; }
             ),
             projectiles.end()
         );
@@ -378,7 +405,6 @@ int main()
         window.draw(pSprite.sprite);
         window.draw(astSpawn);
         window.draw(pCircle);
-        window.draw(angleText);
         window.draw(text);
         window.display();
     }

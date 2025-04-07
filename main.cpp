@@ -6,145 +6,16 @@
 #include "headers/Objects.h"
 #include "headers/Functions.h"
 #include "headers/ConstantsOrAttributes.h"
-#include <string>
-#include <string_view>
 #include <algorithm>
 #include <cstdlib>
-
-
-
-
-/*float degToRad(int degrees)
-{
-    return degrees*(3.1415926535/180);
-}*/
-
-//sf::Texture playerTexture("sprites/theTriangleFixed.png",false,sf::IntRect({0,0},{50,80}));
-
-//sf::Texture shipTexture("sprites/ship_sheet.png");
-
-
-/*if(!texture.loadFromFile("sprites/ship_sheet.png"))
-{
-    std::cerr << "Nenacita ti lod" std::endl;
-    return -1
-}*/
-
-
-
-/*struct Player
-{
-    float xPlayer {0};
-    float yPlayer {0};
-    bool blewUp {0};
-    sf::Sprite sprite{shipTexture};
-    int texWidth {0};
-    float texTimer {0};
-    Player(float xPos, float yPos)
-    {
-
-        sprite.setPosition({xPos,yPos});
-        xPlayer = xPos;
-        yPlayer = yPos;
-        sprite.setOrigin({25.0f,40.0f});
-    }
-
-
-    void rotatePlayer(int degrees,float dt,int rotationSpeed)
-    {
-        sprite.rotate(dt*rotationSpeed*(sf::degrees(degrees)));
-    }
-
-    void movePlayer(float dt,int movementSpeed)
-    {
-            sprite.move({movementSpeed*(40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180))+xPlayer - xPlayer)*dt,
-                        movementSpeed*(40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180))+yPlayer - yPlayer)*dt});
-            xPlayer = sprite.getPosition().x;
-            yPlayer = sprite.getPosition().y;
-    }
-
-};*/
-
-
-/*struct Projectile
-{
-    sf::CircleShape shape;
-    float xProjectile {0};
-    float yProjectile {0};
-    float lifetime {0};
-    bool blickSum {false};
-
-    Projectile(float xPos, float yPos,sf::Angle Rotation)
-    {
-        shape.setRadius(2.0f);
-        shape.setOrigin(shape.getGeometricCenter());
-        shape.setFillColor(sf::Color::Red);
-        shape.setPosition({xPos,yPos});
-        shape.setRotation(Rotation);
-        xProjectile = xPos;
-        yProjectile = yPos;
-
-
-    }
-    void moveProjectile(float dt,int movementSpeed)
-    {
-            shape.move({movementSpeed*(40*std::sin(degToRad(-shape.getRotation().asDegrees()+180))+xProjectile - xProjectile)*dt,
-                        movementSpeed*(40*std::cos(degToRad(-shape.getRotation().asDegrees()+180))+yProjectile - yProjectile)*dt});
-            xProjectile = shape.getPosition().x;
-            yProjectile = shape.getPosition().y;
-    }
-
-};
-*/
-
-
-/*struct Target
-{
-    sf::CircleShape shape;
-    float xTarget {0};
-    float yTarget {0};
-    float xMoveVector {0};
-    float yMoveVector {0};
-    float targSpeed {0.5};
-    Target(float x, float y)
-    {
-        shape.setPosition({x,y});
-        shape.setRadius(30.0f);
-        shape.setOrigin(shape.getGeometricCenter());
-        shape.setFillColor(sf::Color::Green);
-        xTarget = x;
-        yTarget = y;
-    }
-
-    float secondsExisted {0};
-    bool wasClicked {false};
-
-
-    void moveTarget(float dt)
-    {
-        shape.move({xMoveVector*dt*targSpeed,yMoveVector*dt*targSpeed});
-    }
-};*/
-
-    float secSinceSpawn{0};
-
-
 
 int main()
 {
 
     std::vector<Target> targets;
-    targets.emplace_back(Random::get(0,600),Random::get(0,500));
+    //targets.emplace_back(Random::get(0,600),Random::get(0,500));
     Player pSprite(300,300);
     pSprite.sprite.setTextureRect({ {0, 0}, {50, 80} });
-
-    sf::CircleShape pCircle;
-   /* pCircle.setRadius(40.0f);
-    pCircle.setFillColor(sf::Color::Transparent);
-    pCircle.setOutlineThickness(2.0f);
-    pCircle.setOutlineColor(sf::Color::Magenta);
-    pCircle.setOrigin(pCircle.getGeometricCenter());
-*/
 
     constexpr float spawnRadius {750.0f};
     sf::CircleShape astSpawn;
@@ -154,10 +25,7 @@ int main()
     astSpawn.setOutlineThickness(2.0f);
     astSpawn.setOrigin(astSpawn.getGeometricCenter());
 
-
-
     std::vector<Projectile> projectiles;
-    float hitAmount{0};
     /*sf::CircleShape gunRect;
     gunRect.setRadius(15.0f);
     gunRect.setFillColor(sf::Color::Red);
@@ -203,10 +71,9 @@ int main()
 
         }
 
-        pCircle.setPosition({pSprite.xPlayer,pSprite.yPlayer});
         astSpawn.setPosition({pSprite.xPlayer,pSprite.yPlayer});
         float spriteRotation = pSprite.sprite.getRotation().asDegrees();
-        //std::cout << spriteRotation << '\n';
+
         float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
         float yGunRect = 40*std::cos(-degToRad(spriteRotation+180))+pSprite.yPlayer;
 
@@ -219,21 +86,23 @@ int main()
             fireDelay = 0.5;
         }
 
-        while(const std::optional event = window.pollEvent()){
+        while(const std::optional event = window.pollEvent())
+        {
 
-        if(event->is<sf::Event::Closed>()){
+            if(event->is<sf::Event::Closed>())
+            {
 
-            window.close();
-
-            }
-        else if(const auto*keyPressed = event->getIf<sf::Event::KeyPressed>()){
-            if(keyPressed->scancode == sf::Keyboard::Scancode::Escape){
                 window.close();
-            }
-            }
 
+            }
+        else if(const auto*keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if(keyPressed->scancode == sf::Keyboard::Scancode::Escape)
+                {
+                    window.close();
+                }
+            }
         }
-
 
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
 
@@ -262,7 +131,7 @@ int main()
             //float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
             //float yGunRect = 40*std::cos(-degToRad(spriteRotation+180))+pSprite.yPlayer;
             int ranDegree = Random::get(0,360);
-            targets.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+pSprite.xPlayer,spawnRadius*std::cos(degToRad(ranDegree))+pSprite.yPlayer);
+            targets.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+pSprite.xPlayer,spawnRadius*std::cos(degToRad(ranDegree))+pSprite.yPlayer,100);
 
             targets.back().xMoveVector = (pSprite.xPlayer - targets.back().xTarget);
             targets.back().yMoveVector = (pSprite.yPlayer - targets.back().yTarget);
@@ -270,14 +139,6 @@ int main()
             secSinceSpawn = 0;
         }
 
-        for(unsigned int i {0};i<targets.size();++i)
-            {
-                if((targets[i].secondsExisted >= 5) && !(targets[i].wasClicked))
-                {
-                    targets[i].wasClicked = true;
-                    ++missed;
-                }
-            }
 
         for(unsigned int i {0}; i<projectiles.size();++i)
             {
@@ -285,14 +146,14 @@ int main()
             }
 
 
-        for(unsigned int i {0}; i<targets.size();++i)
-            {
-                targets[i].moveTarget(dt);
-            }
-
-
        for(unsigned int i {0}; i<targets.size(); ++i)
             {
+            targets[i].moveTarget(dt);
+            if((targets[i].secondsExisted >= maxTargetLifetime) && !(targets[i].wasClicked))
+            {
+                targets[i].wasClicked = true;
+                ++missed;
+            }
             for(unsigned int j {0}; j<projectiles.size();++j)
                 {
                     if(projectiles[j].shape.getGlobalBounds().findIntersection(targets[i].shape.getGlobalBounds()) && !projectiles[j].blickSum)
@@ -302,23 +163,30 @@ int main()
                             ++score;
                             std::cout << hitAmount << '\n';
                             targets[i].wasClicked = true;
+
+                            std::cout << "X na tvorbu noveho " << targets[i].xTarget+50 << " Y na tvorbu noveho " << targets[i].yTarget+50 << '\n';
+                            std::cout << "Radius trafeneho je " << targets[i].radius << '\n';
+                            if(targets[i].radius>25)
+                            {
+                                targets.emplace_back(targets[i].xTarget,targets[i].yTarget,targets[i].radius/2);
+                                targets.back().xMoveVector = (pSprite.xPlayer - targets.back().xTarget);
+                                targets.back().yMoveVector = (pSprite.yPlayer - targets.back().yTarget);
+                            }
+
+
                             projectiles[j].blickSum = true;
 
                         }
-
-
                 }
-                if(!pSprite.blewUp)
+            if(!pSprite.blewUp)
+            {
+                if(targets[i].shape.getGlobalBounds().findIntersection(pSprite.sprite.getGlobalBounds()))
                     {
-                        if(targets[i].shape.getGlobalBounds().findIntersection(pSprite.sprite.getGlobalBounds()))
-                            {
-                                pSprite.blewUp = true;
-                                std::cout << "Kaboom\n";
-                            }
+                        pSprite.blewUp = true;
+                        std::cout << "Kaboom\n";
                     }
             }
-
-
+        }
 
     //ANIMACIE
 
@@ -329,7 +197,6 @@ int main()
         if(pSprite.texTimer >= 0.05)
         {
             pSprite.texWidth += 50;
-            std::cout << pSprite.texWidth << '\n';
 
             if(pSprite.texWidth >= shipTexture.getSize().x)
             {
@@ -338,7 +205,6 @@ int main()
             if(pSprite.texWidth < shipTexture.getSize().x)
             {
 
-                std::cout << pSprite.texWidth << '\n';
                 pSprite.sprite.setTextureRect({ {pSprite.texWidth,0} , {50,80} });
             }
 
@@ -356,7 +222,7 @@ int main()
 
 
         //Render
-        window.clear(sf::Color::White);
+        window.clear(sf::Color::Black);
 
         //DRAWING
         //window->draw(sprite);
@@ -404,7 +270,6 @@ int main()
         clock.restart();
         window.draw(pSprite.sprite);
         window.draw(astSpawn);
-        window.draw(pCircle);
         window.draw(text);
         window.display();
     }

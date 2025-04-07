@@ -10,8 +10,17 @@ int missed {0};
 
 float fireDelay{0.5};
 float hitAmount{0};
-
+float maxTargetLifetime {5};
+float radiusL {100};
+float radiusM {50};
+float radiusS {25};
+float secSinceSpawn{0};
 
 float maxLifetime {3};
+
+
 int rotationSpeed {350};
 int movementSpeed {10};
+
+
+float magic {69};

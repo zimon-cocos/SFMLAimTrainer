@@ -1,7 +1,13 @@
 #pragma once
 #include "Functions.h"
+#include "ConstantsOrAttributes.h"
 
 sf::Texture shipTexture("sprites/ship_sheet.png");
+sf::Texture astTexS("sprites/asteroid_maly.png");
+sf::Texture astTexM("sprites/asteroid_stredny.png");
+sf::Texture astTexL("sprites/asteroid_velky.png");
+
+
 struct Player
 {
     float xPlayer {0};
@@ -46,9 +52,9 @@ struct Projectile
 
     Projectile(float xPos, float yPos,sf::Angle Rotation)
     {
-        shape.setRadius(2.0f);
+        shape.setRadius(4.0f);
         shape.setOrigin(shape.getGeometricCenter());
-        shape.setFillColor(sf::Color::Red);
+        shape.setFillColor(sf::Color::Green);
         shape.setPosition({xPos,yPos});
         shape.setRotation(Rotation);
         xProjectile = xPos;
@@ -70,18 +76,35 @@ struct Projectile
 struct Target
 {
     sf::CircleShape shape;
+
     float xTarget {0};
     float yTarget {0};
     float xMoveVector {0};
     float yMoveVector {0};
     float targSpeed {0.5};
+    float radius {100};
 
-    Target(float x, float y)
+    Target(float x, float y,float radiusInput)
     {
+        if(radiusInput == 100)
+        {
+            shape.setTexture(&astTexL);
+            shape.setTextureRect(sf::IntRect({0,0},{200,200}));
+        }
+        else if(radiusInput == 50)
+        {
+            shape.setTexture(&astTexM);
+            shape.setTextureRect(sf::IntRect({0,0},{100,100}));
+        }
+        else
+        {
+            shape.setTexture(&astTexS);
+            shape.setTextureRect(sf::IntRect({0,0},{50,50}));
+        }
+        radius = radiusInput;
         shape.setPosition({x,y});
-        shape.setRadius(30.0f);
+        shape.setRadius(radius);
         shape.setOrigin(shape.getGeometricCenter());
-        shape.setFillColor(sf::Color::Green);
         xTarget = x;
         yTarget = y;
     }
@@ -93,5 +116,7 @@ struct Target
     void moveTarget(float dt)
     {
         shape.move({xMoveVector*dt*targSpeed,yMoveVector*dt*targSpeed});
+        xTarget = xTarget + xMoveVector*dt*targSpeed;
+        yTarget = yTarget + yMoveVector*dt*targSpeed;
     }
 };

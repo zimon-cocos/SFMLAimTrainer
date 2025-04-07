@@ -7,9 +7,14 @@ constexpr unsigned int framerate {60};
 int score {0};
 int previousScore {0};
 int missed {0};
+float toSpawn {2};
+float difIncrease {0.01};
 
-float fireDelay{0.5};
+
+float fireDelay{0.25};
+float fireDelayOriginal {fireDelay};
 float hitAmount{0};
+
 float maxTargetLifetime {5};
 float radiusL {100};
 float radiusM {50};

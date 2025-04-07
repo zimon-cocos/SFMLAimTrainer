@@ -81,7 +81,7 @@ struct Target
     float yTarget {0};
     float xMoveVector {0};
     float yMoveVector {0};
-    float targSpeed {0.5};
+    float targSpeed {0.25};
     float radius {100};
 
     Target(float x, float y,float radiusInput)

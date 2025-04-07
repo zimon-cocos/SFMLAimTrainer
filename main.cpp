@@ -83,7 +83,7 @@ int main()
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && fireDelay<= 0)
         {
             projectiles.emplace_back(Projectile(xGunRect,yGunRect,pSprite.sprite.getRotation()));
-            fireDelay = 0.5;
+            fireDelay = fireDelayOriginal;
         }
 
         while(const std::optional event = window.pollEvent())
@@ -125,7 +125,9 @@ int main()
         }
         text.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
 
-        if(secSinceSpawn>2)
+        toSpawn = toSpawn - difIncrease*dt;
+        std::cout << "Difficulty: " << toSpawn << '\n';
+        if(secSinceSpawn>toSpawn)
         {
             //targets.emplace_back(Random::get(0,600),Random::get(0,500));
             //float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;

@@ -25,7 +25,9 @@ float maxLifetime {3};
 
 
 int rotationSpeed {350};
-int movementSpeed {10};
+float movementSpeed {0};
+float acceleration {12};
+float maxSpeed {10};
 
 
 float magic {69};

@@ -50,8 +50,15 @@
 			<Add directory="/home/heslo-odin/Documents/SFML_Attempt_2/SFML-3.0.0/lib" />
 		</Linker>
 		<Unit filename="fonts/Jersey_15/Jersey15-Regular.ttf" />
+		<Unit filename="headers/ConstantsOrAttributes.h" />
+		<Unit filename="headers/Functions.h" />
+		<Unit filename="headers/Objects.h" />
 		<Unit filename="headers/Random.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="sprites/asteroid_maly.png" />
+		<Unit filename="sprites/asteroid_stredny.png" />
+		<Unit filename="sprites/asteroid_velky.png" />
+		<Unit filename="sprites/ship_sheet.png" />
 		<Unit filename="sprites/theTriangle.png" />
 		<Unit filename="sprites/theTriangleFixed.png" />
 		<Extensions>

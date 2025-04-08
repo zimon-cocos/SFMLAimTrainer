@@ -57,6 +57,32 @@ int main()
         secSinceSpawn = secSinceSpawn + dt;
         fireDelay = fireDelay - dt;
 
+        if(pSprite.xPlayer > width+50)
+        {
+            pSprite.sprite.setPosition({-50.0f,pSprite.yPlayer});
+
+        }
+        if(pSprite.yPlayer > height+50)
+        {
+            pSprite.sprite.setPosition({pSprite.xPlayer,-50.0f});
+
+        }
+        if(pSprite.xPlayer < -50.0f)
+        {
+            pSprite.sprite.setPosition({650.0f,pSprite.yPlayer});
+
+        }
+
+        if(pSprite.yPlayer < -50.0f)
+        {
+            pSprite.sprite.setPosition({pSprite.xPlayer,650.0f});
+
+        }
+
+
+
+
+
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
         {
             pSprite.rotatePlayer(-1,dt,rotationSpeed);
@@ -67,9 +93,26 @@ int main()
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
         {
-            pSprite.movePlayer(dt,movementSpeed);
+            //akceleracia
+            if(movementSpeed < maxSpeed)
+            {
+                std::cout << "M speed: " << movementSpeed << '\n';
+                std::cout << acceleration*dt << '\n';
+                movementSpeed += acceleration*dt/2;
+            }
 
+            pSprite.movePlayer(dt,movementSpeed);
         }
+
+        if(!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && movementSpeed > 0)
+        {
+            //deakceleracia
+            movementSpeed -= acceleration*dt/2;
+            pSprite.movePlayer(dt,movementSpeed);
+        }
+
+
+
 
         astSpawn.setPosition({pSprite.xPlayer,pSprite.yPlayer});
         float spriteRotation = pSprite.sprite.getRotation().asDegrees();
@@ -126,7 +169,7 @@ int main()
         text.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
 
         toSpawn = toSpawn - difIncrease*dt;
-        std::cout << "Difficulty: " << toSpawn << '\n';
+        //std::cout << "Difficulty: " << toSpawn << '\n';
         if(secSinceSpawn>toSpawn)
         {
             //targets.emplace_back(Random::get(0,600),Random::get(0,500));
@@ -157,36 +200,28 @@ int main()
                 ++missed;
             }
             for(unsigned int j {0}; j<projectiles.size();++j)
-                {
+            {
                     if(projectiles[j].shape.getGlobalBounds().findIntersection(targets[i].shape.getGlobalBounds()) && !projectiles[j].blickSum)
-                        {
-                            std::cout << "Hit\n";
+                    {
                             ++hitAmount;
                             ++score;
-                            std::cout << hitAmount << '\n';
                             targets[i].wasClicked = true;
-
-                            std::cout << "X na tvorbu noveho " << targets[i].xTarget+50 << " Y na tvorbu noveho " << targets[i].yTarget+50 << '\n';
-                            std::cout << "Radius trafeneho je " << targets[i].radius << '\n';
                             if(targets[i].radius>25)
                             {
                                 targets.emplace_back(targets[i].xTarget,targets[i].yTarget,targets[i].radius/2);
                                 targets.back().xMoveVector = (pSprite.xPlayer - targets.back().xTarget);
                                 targets.back().yMoveVector = (pSprite.yPlayer - targets.back().yTarget);
                             }
-
-
                             projectiles[j].blickSum = true;
-
-                        }
-                }
+                    }
+            }
             if(!pSprite.blewUp)
             {
                 if(targets[i].shape.getGlobalBounds().findIntersection(pSprite.sprite.getGlobalBounds()))
-                    {
+                {
                         pSprite.blewUp = true;
                         std::cout << "Kaboom\n";
-                    }
+                }
             }
         }
 
@@ -209,8 +244,6 @@ int main()
 
                 pSprite.sprite.setTextureRect({ {pSprite.texWidth,0} , {50,80} });
             }
-
-
 
             pSprite.texTimer = 0;
         }

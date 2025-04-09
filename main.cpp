@@ -13,11 +13,10 @@ int main()
 {
 
     std::vector<Target> targets;
-    //targets.emplace_back(Random::get(0,600),Random::get(0,500));
     Player pSprite(300,300);
     pSprite.sprite.setTextureRect({ {0, 0}, {50, 80} });
+    pSprite.sprite.setScale({1.5,1.5});
 
-    constexpr float spawnRadius {750.0f};
     sf::CircleShape astSpawn;
     astSpawn.setRadius(spawnRadius);
     astSpawn.setFillColor(sf::Color::Transparent);
@@ -47,15 +46,35 @@ int main()
     text.setPosition({width/2 - 80,30});
 
 
+    sf::Text timerTxt(font);
+    timerTxt.setString("placeholder");
+    timerTxt.setCharacterSize(30);
+    timerTxt.setFillColor(sf::Color::Red);
+    timerTxt.setPosition({width/2-120,60});
+
     sf::Clock clock;
     float dt {0};
 
     while(window.isOpen()){
 
         sf::Time timeElapsed = clock.getElapsedTime();
-        dt = timeElapsed.asSeconds();
+        dt = timeElapsed.asSeconds()*timeSpeed;
         secSinceSpawn = secSinceSpawn + dt;
         fireDelay = fireDelay - dt;
+        bossTimer = bossTimer - dt;
+
+
+        //casovac
+        if(static_cast<int>(bossTimer)%60<10)
+        {
+            timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(bossTimer)/60) + ":0" + std::to_string(static_cast<int>(bossTimer)%60));
+        }
+        else
+        {
+            timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(bossTimer)/60) + ":" + std::to_string(static_cast<int>(bossTimer)%60));
+        }
+
+
 
         if(pSprite.xPlayer > width+50)
         {
@@ -69,19 +88,15 @@ int main()
         }
         if(pSprite.xPlayer < -50.0f)
         {
-            pSprite.sprite.setPosition({650.0f,pSprite.yPlayer});
+            pSprite.sprite.setPosition({width+50,pSprite.yPlayer});
 
         }
 
         if(pSprite.yPlayer < -50.0f)
         {
-            pSprite.sprite.setPosition({pSprite.xPlayer,650.0f});
+            pSprite.sprite.setPosition({pSprite.xPlayer,height+50});
 
         }
-
-
-
-
 
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
         {
@@ -107,7 +122,7 @@ int main()
         if(!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && movementSpeed > 0)
         {
             //deakceleracia
-            movementSpeed -= acceleration*dt/2;
+            movementSpeed -= deacceleration*dt/2;
             pSprite.movePlayer(dt,movementSpeed);
         }
 
@@ -306,6 +321,13 @@ int main()
         window.draw(pSprite.sprite);
         window.draw(astSpawn);
         window.draw(text);
+        if(bossTimer <301 && bossTimer > 0)
+        {
+            window.draw(timerTxt);
+        }
+
+
+
         window.display();
     }
 

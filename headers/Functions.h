@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 
 float degToRad(int degrees)

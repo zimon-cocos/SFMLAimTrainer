@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1744129290 source:/home/heslo-odin/Documents/c++/SFMLAimTrainer/main.cpp
+1744214785 source:/home/heslo-odin/Documents/c++/SFMLAimTrainer/main.cpp
 	<iostream>
 	<SFML/Graphics.hpp>
 	<vector>
@@ -524,11 +524,12 @@
 	<chrono>
 	<random>
 
-1744047694 /home/heslo-odin/Documents/c++/SFMLAimTrainer/headers/Objects.h
+1744212992 /home/heslo-odin/Documents/c++/SFMLAimTrainer/headers/Objects.h
 	"Functions.h"
 	"ConstantsOrAttributes.h"
 
-1744041087 /home/heslo-odin/Documents/c++/SFMLAimTrainer/headers/Functions.h
+1744213797 /home/heslo-odin/Documents/c++/SFMLAimTrainer/headers/Functions.h
+	<string>
 
-1744129329 /home/heslo-odin/Documents/c++/SFMLAimTrainer/headers/ConstantsOrAttributes.h
+1744214800 /home/heslo-odin/Documents/c++/SFMLAimTrainer/headers/ConstantsOrAttributes.h
 

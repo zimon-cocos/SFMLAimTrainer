@@ -2,10 +2,37 @@
 #include "Functions.h"
 #include "ConstantsOrAttributes.h"
 
+sf::Texture projectile ("sprites/projectile.png");
 sf::Texture shipTexture("sprites/ship_sheet.png");
 sf::Texture astTexS("sprites/asteroid_maly.png");
 sf::Texture astTexM("sprites/asteroid_stredny.png");
 sf::Texture astTexL("sprites/asteroid_velky.png");
+sf::Texture background("sprites/pozadieMenej.png");
+
+
+
+struct Drop
+{
+
+
+    sf::RectangleShape shape;
+    float xDrop {0};
+    float yDrop {0};
+    bool pickedUp {false};
+    int ranNum {Random::get(0,2)};
+    Drop(float xDrop, float yDrop)
+    {
+        ranNum = Random::get(0,2);
+        shape.setSize({40.0f,40.0f});
+        shape.setFillColor(sf::Color::Transparent);
+        shape.setOutlineColor(sf::Color::White);
+        shape.setOutlineThickness(2.0f);
+        shape.setPosition({xDrop,yDrop});
+
+
+    }
+};
+
 
 
 struct Player
@@ -52,6 +79,7 @@ struct Projectile
 
     Projectile(float xPos, float yPos,sf::Angle Rotation)
     {
+        shape.setTexture(&projectile);
         shape.setRadius(4.0f);
         shape.setOrigin(shape.getGeometricCenter());
         shape.setFillColor(sf::Color::Green);

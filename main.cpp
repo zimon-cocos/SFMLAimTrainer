@@ -12,6 +12,9 @@
 int main()
 {
 
+    sf::Sprite backgSprite (background);
+    backgSprite.setPosition({0,0});
+
     std::vector<Target> targets;
     Player pSprite(300,300);
     pSprite.sprite.setTextureRect({ {0, 0}, {50, 80} });
@@ -25,6 +28,7 @@ int main()
     astSpawn.setOrigin(astSpawn.getGeometricCenter());
 
     std::vector<Projectile> projectiles;
+    std::vector<Drop> drops;
     /*sf::CircleShape gunRect;
     gunRect.setRadius(15.0f);
     gunRect.setFillColor(sf::Color::Red);
@@ -111,8 +115,6 @@ int main()
             //akceleracia
             if(movementSpeed < maxSpeed)
             {
-                std::cout << "M speed: " << movementSpeed << '\n';
-                std::cout << acceleration*dt << '\n';
                 movementSpeed += acceleration*dt/2;
             }
 
@@ -219,8 +221,15 @@ int main()
                     if(projectiles[j].shape.getGlobalBounds().findIntersection(targets[i].shape.getGlobalBounds()) && !projectiles[j].blickSum)
                     {
                             ++hitAmount;
-                            ++score;
+                            //++score;
+                            score=score+10;
                             targets[i].wasClicked = true;
+                            if(score % 100 == 0)
+                            {
+                                drops.emplace_back(targets[i].xTarget,targets[i].yTarget);
+                                std::cout << "Drop created\n";
+                                break;
+                            }
                             if(targets[i].radius>25)
                             {
                                 targets.emplace_back(targets[i].xTarget,targets[i].yTarget,targets[i].radius/2);
@@ -275,13 +284,21 @@ int main()
         window.clear(sf::Color::Black);
 
         //DRAWING
-        //window->draw(sprite);
+
+        window.draw(backgSprite);
         for(unsigned int i {0};i<targets.size();++i)
         {
             if(!(targets[i].wasClicked))
             {
                 window.draw(targets[i].shape);
                 targets[i].secondsExisted += dt;
+            }
+        }
+        for(unsigned int i {0};i<drops.size();++i)
+        {
+            if(!(drops[i].pickedUp))
+            {
+                window.draw(drops[i].shape);
             }
         }
 
@@ -294,6 +311,7 @@ int main()
             }
 
         }
+
 
 
         //Ai slop//
@@ -318,6 +336,8 @@ int main()
         //Ai slop//
 
         clock.restart();
+
+
         window.draw(pSprite.sprite);
         window.draw(astSpawn);
         window.draw(text);
@@ -327,8 +347,9 @@ int main()
         }
 
 
-
         window.display();
+
+
     }
 
     //delete window;

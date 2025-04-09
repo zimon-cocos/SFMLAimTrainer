@@ -58,6 +58,8 @@
 		<Unit filename="sprites/asteroid_maly.png" />
 		<Unit filename="sprites/asteroid_stredny.png" />
 		<Unit filename="sprites/asteroid_velky.png" />
+		<Unit filename="sprites/pozadie.png" />
+		<Unit filename="sprites/projectile.png" />
 		<Unit filename="sprites/ship_sheet.png" />
 		<Unit filename="sprites/theTriangle.png" />
 		<Unit filename="sprites/theTriangleFixed.png" />

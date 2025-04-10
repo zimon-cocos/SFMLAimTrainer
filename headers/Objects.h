@@ -8,6 +8,10 @@ sf::Texture astTexS("sprites/asteroid_maly.png");
 sf::Texture astTexM("sprites/asteroid_stredny.png");
 sf::Texture astTexL("sprites/asteroid_velky.png");
 sf::Texture background("sprites/pozadieMenej.png");
+sf::Texture firerateSprite("sprites/boostFirer.png");
+sf::Texture armorSprite("sprites/armor.png");
+sf::Texture accelerationSprite("sprites/boostAcc.png");
+sf::Texture errorSprite("sprites/theTriangle.png");
 
 
 
@@ -16,6 +20,7 @@ struct Drop
 
 
     sf::RectangleShape shape;
+    sf::Sprite sprite {accelerationSprite};
     float xDrop {0};
     float yDrop {0};
     bool pickedUp {false};
@@ -28,6 +33,20 @@ struct Drop
         shape.setOutlineColor(sf::Color::White);
         shape.setOutlineThickness(2.0f);
         shape.setPosition({xDrop,yDrop});
+        sprite.setPosition({xDrop+5,yDrop+5});
+
+        if(ranNum == 0)
+        {
+            sprite.setTexture(firerateSprite);
+        }
+        if(ranNum == 1)
+        {
+            sprite.setTexture(armorSprite);
+        }
+        if(ranNum == 2)
+        {
+            sprite.setTexture(accelerationSprite);
+        }
 
 
     }

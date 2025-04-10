@@ -3,7 +3,7 @@
 constexpr unsigned int width {900};
 constexpr unsigned int height {900};
 constexpr unsigned int framerate {120};
-constexpr float timeSpeed {1};
+constexpr float timeSpeed {3};
 
 
 

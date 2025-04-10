@@ -228,8 +228,9 @@ int main()
                             {
                                 drops.emplace_back(targets[i].xTarget,targets[i].yTarget);
                                 std::cout << "Drop created\n";
-                                break;
+                                goto dropCreated;
                             }
+                            dropCreated:
                             if(targets[i].radius>25)
                             {
                                 targets.emplace_back(targets[i].xTarget,targets[i].yTarget,targets[i].radius/2);
@@ -299,6 +300,7 @@ int main()
             if(!(drops[i].pickedUp))
             {
                 window.draw(drops[i].shape);
+                window.draw(drops[i].sprite);
             }
         }
 

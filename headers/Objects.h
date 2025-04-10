@@ -62,6 +62,9 @@ struct Player
     sf::Sprite sprite{shipTexture};
     int texWidth {0};
     float texTimer {0};
+    int health {100};
+    int accLvl {1};
+    int firerateLvl {1};
     Player(float xPos, float yPos)
     {
 

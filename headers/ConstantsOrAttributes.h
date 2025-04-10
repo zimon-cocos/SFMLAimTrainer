@@ -3,7 +3,7 @@
 constexpr unsigned int width {900};
 constexpr unsigned int height {900};
 constexpr unsigned int framerate {120};
-constexpr float timeSpeed {3};
+constexpr float timeSpeed {1};
 
 
 
@@ -16,7 +16,7 @@ float difIncrease {0.01};
 
 
 float fireDelay{0.25};
-float fireDelayOriginal {fireDelay};
+float fireDelayOriginal {0.25};
 float hitAmount{0};
 
 float maxTargetLifetime {15};
@@ -26,6 +26,7 @@ float radiusS {25};
 float secSinceSpawn{0};
 float targSpeed {0.15};
 float bossTimer {60*6};
+int astDamage {25};
 
 
 float maxLifetime {4};

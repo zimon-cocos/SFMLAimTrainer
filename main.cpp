@@ -56,6 +56,24 @@ int main()
     timerTxt.setFillColor(sf::Color::Red);
     timerTxt.setPosition({width/2-120,60});
 
+    sf::Text hpTxt(font);
+    hpTxt.setString("placeholder");
+    hpTxt.setCharacterSize(24);
+    hpTxt.setFillColor(sf::Color::Red);
+    hpTxt.setPosition({675,30});
+
+    sf::Text accTxt(font);
+    accTxt.setString("placeholder");
+    accTxt.setCharacterSize(24);
+    accTxt.setFillColor(sf::Color::Red);
+    accTxt.setPosition({675,50});
+
+    sf::Text firerateTxt(font);
+    firerateTxt.setString("placeholder");
+    firerateTxt.setCharacterSize(24);
+    firerateTxt.setFillColor(sf::Color::Red);
+    firerateTxt.setPosition({675,70});
+
     sf::Clock clock;
     float dt {0};
 
@@ -67,6 +85,9 @@ int main()
         fireDelay = fireDelay - dt;
         bossTimer = bossTimer - dt;
 
+        hpTxt.setString("Hull integrity: " + std::to_string(pSprite.health) + "%");
+        accTxt.setString("Aceleration level: " + std::to_string(pSprite.accLvl));
+        firerateTxt.setString("Firerate level: " + std::to_string(pSprite.firerateLvl));
 
         //casovac
         if(static_cast<int>(bossTimer)%60<10)
@@ -222,7 +243,7 @@ int main()
                     {
                             ++hitAmount;
                             //++score;
-                            score=score+10;
+                            score=score+50;
                             targets[i].wasClicked = true;
                             if(score % 100 == 0)
                             {
@@ -242,13 +263,52 @@ int main()
             }
             if(!pSprite.blewUp)
             {
-                if(targets[i].shape.getGlobalBounds().findIntersection(pSprite.sprite.getGlobalBounds()))
+                if(targets[i].shape.getGlobalBounds().findIntersection(pSprite.sprite.getGlobalBounds()) && !targets[i].wasClicked)
                 {
+
+                    targets[i].wasClicked = true;
+                    if(pSprite.health - astDamage <= 0)
+                    {
                         pSprite.blewUp = true;
                         std::cout << "Kaboom\n";
+                    }
+                    pSprite.health -= astDamage;
+
+                }
+
+
+        }
+        }
+
+
+        for(unsigned int i {0}; i<drops.size(); ++i)
+            {
+            if(drops[i].shape.getGlobalBounds().findIntersection(pSprite.sprite.getGlobalBounds()) && !drops[i].pickedUp)
+            {
+                if(drops[i].ranNum == 0)
+                {
+                    drops[i].sprite.setTexture(firerateSprite);
+                    fireDelayOriginal -= 0.02;
+                    ++pSprite.firerateLvl;
+                    std::cout << "Fire delay" << fireDelay << '\n';
+                    drops[i].pickedUp = true;
+                }
+                if(drops[i].ranNum == 1)
+                {
+                    drops[i].sprite.setTexture(armorSprite);
+                    pSprite.health += astDamage;
+                    drops[i].pickedUp = true;
+                }
+                if(drops[i].ranNum == 2)
+                {
+                    drops[i].sprite.setTexture(accelerationSprite);
+                    acceleration += 2;
+                    ++pSprite.accLvl;
+                    std::cout << "Acceleration: " << acceleration << '\n';
+                    drops[i].pickedUp = true;
                 }
             }
-        }
+            }
 
     //ANIMACIE
 
@@ -301,8 +361,12 @@ int main()
             {
                 window.draw(drops[i].shape);
                 window.draw(drops[i].sprite);
-            }
+
+                }
+
         }
+
+
 
         for(unsigned int i {0};i<projectiles.size();++i)
         {
@@ -343,6 +407,9 @@ int main()
         window.draw(pSprite.sprite);
         window.draw(astSpawn);
         window.draw(text);
+        window.draw(hpTxt);
+        window.draw(firerateTxt);
+        window.draw(accTxt);
         if(bossTimer <301 && bossTimer > 0)
         {
             window.draw(timerTxt);

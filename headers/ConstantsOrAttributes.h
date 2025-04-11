@@ -2,7 +2,7 @@
 
 constexpr unsigned int width {900};
 constexpr unsigned int height {900};
-constexpr unsigned int framerate {120};
+constexpr unsigned int framerate {60};
 constexpr float timeSpeed {1};
 
 

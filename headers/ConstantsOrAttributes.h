@@ -25,8 +25,9 @@ float radiusM {50};
 float radiusS {25};
 float secSinceSpawn{0};
 float targSpeed {0.15};
-float bossTimer {60*6};
-int astDamage {25};
+float bossTimer {3};
+int astDamage {0};
+bool bossSpawned {false};
 
 
 float maxLifetime {4};

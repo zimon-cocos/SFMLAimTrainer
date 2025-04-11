@@ -4,14 +4,21 @@
 
 sf::Texture projectile ("sprites/projectile.png");
 sf::Texture shipTexture("sprites/ship_sheet.png");
-sf::Texture astTexS("sprites/asteroid_maly.png");
-sf::Texture astTexM("sprites/asteroid_stredny.png");
-sf::Texture astTexL("sprites/asteroid_velky.png");
+
 sf::Texture background("sprites/pozadieMenej.png");
 sf::Texture firerateSprite("sprites/boostFirer.png");
 sf::Texture armorSprite("sprites/armor.png");
 sf::Texture accelerationSprite("sprites/boostAcc.png");
 sf::Texture errorSprite("sprites/theTriangle.png");
+
+sf::Texture astTexS("sprites/asteroid_maly.png");
+sf::Texture astTexM("sprites/asteroid_stredny.png");
+sf::Texture astTexL("sprites/asteroid_velky.png");
+
+sf::Texture bossL("sprites/BossL.png");
+sf::Texture bossM("sprites/BossM.png");
+sf::Texture bossS("sprites/BossS.png");
+
 
 
 
@@ -120,6 +127,54 @@ struct Projectile
             yProjectile = shape.getPosition().y;
     }
 
+};
+
+
+struct Boss
+{
+    sf::CircleShape shape;
+
+    float xTarget {0};
+    float yTarget {0};
+    float xMoveVector {0};
+    float yMoveVector {0};
+    float radius {100};
+
+    Boss(float x, float y,float radiusInput)
+    {
+        if(radiusInput == 100)
+        {
+            shape.setTexture(&bossL);
+            shape.setTextureRect(sf::IntRect({0,0},{200,200}));
+        }
+        else if(radiusInput == 50)
+        {
+            shape.setTexture(&bossM);
+            shape.setTextureRect(sf::IntRect({0,0},{100,100}));
+        }
+        else
+        {
+            shape.setTexture(&bossS);
+            shape.setTextureRect(sf::IntRect({0,0},{50,50}));
+        }
+        radius = radiusInput;
+        shape.setPosition({x,y});
+        shape.setRadius(radius);
+        shape.setOrigin(shape.getGeometricCenter());
+        xTarget = x;
+        yTarget = y;
+    }
+
+    float secondsExisted {0};
+    bool wasClicked {false};
+
+
+    void moveBoss(float dt)
+    {
+        shape.move({xMoveVector*dt*targSpeed,yMoveVector*dt*targSpeed});
+        xTarget = xTarget + xMoveVector*dt*targSpeed;
+        yTarget = yTarget + yMoveVector*dt*targSpeed;
+    }
 };
 
 

@@ -16,6 +16,8 @@ int main()
     backgSprite.setPosition({0,0});
 
     std::vector<Target> targets;
+    std::vector<Boss> boss;
+
     Player pSprite(300,300);
     pSprite.sprite.setTextureRect({ {0, 0}, {50, 80} });
     pSprite.sprite.setScale({1.2,1.2});
@@ -285,7 +287,7 @@ int main()
 
                     toSpawn = toSpawn - difIncrease*dt;
                     //std::cout << "Difficulty: " << toSpawn << '\n';
-                    if(secSinceSpawn>toSpawn)
+                    if(secSinceSpawn>toSpawn && bossTimer >0)
                     {
                         //targets.emplace_back(Random::get(0,600),Random::get(0,500));
                         //float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
@@ -299,6 +301,25 @@ int main()
                         secSinceSpawn = 0;
                     }
 
+                    if(bossTimer < 0 && bossSpawned == false)
+                    {
+                        bossSpawned = true;
+                        std::cout << "Boss spawn\n";
+                        int ranDegree = Random::get(0,360);
+
+                        boss.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+pSprite.xPlayer,spawnRadius*std::cos(degToRad(ranDegree))+pSprite.yPlayer,100);
+
+
+                        boss.back().xMoveVector = (pSprite.xPlayer - boss.back().xTarget);
+                        boss.back().yMoveVector = (pSprite.yPlayer - boss.back().yTarget);
+                    }
+                    if(bossSpawned == true)
+                    {
+                        std::cout << boss.back().xTarget << " x bossa\n";
+                        std::cout << boss.back().yTarget << " y bossa\n";
+                        //boss.back().xMoveVector = (pSprite.xPlayer - boss.back().xTarget);
+                        //boss.back().yMoveVector = (pSprite.yPlayer - boss.back().yTarget);
+                    }
 
                     for(unsigned int i {0}; i<projectiles.size();++i)
                         {
@@ -314,6 +335,15 @@ int main()
                             targets[i].wasClicked = true;
                             ++missed;
                         }
+
+                    for(unsigned int i {0}; i<boss.size(); ++i)
+                        {
+                            std::cout << "Pohyb bossa\n";
+                            boss[i].moveBoss(dt);
+                        }
+
+
+
                         for(unsigned int j {0}; j<projectiles.size();++j)
                         {
                                 if(projectiles[j].shape.getGlobalBounds().findIntersection(targets[i].shape.getGlobalBounds()) && !projectiles[j].blickSum)
@@ -432,8 +462,8 @@ int main()
                             targets[i].secondsExisted += dt;
                         }
                     }
-                    std::cout << projectiles.size() << " je projectiles size\n";
-                    std::cout << drops.size() << " je drops size\n";
+
+
                     for(unsigned int i {0};i<drops.size();++i)
                     {
                         if(!(drops[i].pickedUp))
@@ -458,6 +488,12 @@ int main()
                     }
 
 
+
+
+                    for(unsigned int i {0}; i<boss.size(); ++i)
+                        {
+                            window.draw(boss[i].shape);
+                        }
 
                     //Ai slop//
                     projectiles.erase(
@@ -491,6 +527,7 @@ int main()
                     window.draw(hpTxt);
                     window.draw(firerateTxt);
                     window.draw(accTxt);
+
 
 
                     if(pSprite.blewUp)

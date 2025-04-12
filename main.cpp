@@ -136,8 +136,12 @@ int main()
                             missed = 0;
                             fireDelayOriginal = 0.25;
                             bossTimer = 6*60;
+                            bossSpawned = false;
                             acceleration  = 12;
                             toSpawn = 2;
+                            movementSpeed = 0;
+
+                            boss.clear();
                             targets.clear();
                             projectiles.clear();
                             drops.clear();
@@ -310,15 +314,58 @@ int main()
                         boss.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+pSprite.xPlayer,spawnRadius*std::cos(degToRad(ranDegree))+pSprite.yPlayer,100);
 
 
-                        boss.back().xMoveVector = (pSprite.xPlayer - boss.back().xTarget);
-                        boss.back().yMoveVector = (pSprite.yPlayer - boss.back().yTarget);
                     }
                     if(bossSpawned == true)
                     {
-                        std::cout << boss.back().xTarget << " x bossa\n";
-                        std::cout << boss.back().yTarget << " y bossa\n";
-                        //boss.back().xMoveVector = (pSprite.xPlayer - boss.back().xTarget);
-                        //boss.back().yMoveVector = (pSprite.yPlayer - boss.back().yTarget);
+
+
+                        boss.back().xMoveVector = 5*(pSprite.xPlayer - boss.back().xTarget);
+                        boss.back().yMoveVector = 5*(pSprite.yPlayer - boss.back().yTarget);
+
+                        boss[0].moveBoss(dt);
+
+                        for(unsigned int j {0}; j<projectiles.size();++j)
+                        {
+                                if(projectiles[j].shape.getGlobalBounds().findIntersection(boss[0].shape.getGlobalBounds()) && !projectiles[j].blickSum)
+                                {
+                                        boss[0].health-= 1;
+                                        std::cerr << "Bos health: " << boss[0].health << '\n';
+
+                                        if(boss[0].health<250)
+                                        {
+                                            boss[0].shape.setRadius(50);
+                                            boss[0].shape.setTextureRect(sf::IntRect({0,0},{100,100}));
+                                            boss[0].shape.setTexture(&bossM);
+                                        }
+                                        if(boss[0].health<100)
+                                        {
+                                            boss[0].shape.setRadius(25);
+                                            boss[0].shape.setTextureRect(sf::IntRect({0,0},{50,50}));
+                                            boss[0].shape.setTexture(&bossS);
+                                        }
+
+                                        projectiles[j].blickSum = true;
+                                }
+
+
+                        }
+
+                    //Detekcia kolizie boss tu
+                            if(boss[0].shape.getGlobalBounds().findIntersection(pSprite.sprite.getGlobalBounds()))
+                            {
+
+
+                                if(pSprite.health - bossDamage <= 0)
+                                {
+                                    pSprite.blewUp = true;
+                                    std::cout << "Kaboom\n";
+                                }
+                                pSprite.health -= bossDamage;
+
+                            }
+
+
+                    //AAAAAAAAAAAAAABBBBBBBBBBCCCCCCCCCCCCDDDDDDDDDDd
                     }
 
                     for(unsigned int i {0}; i<projectiles.size();++i)
@@ -338,8 +385,8 @@ int main()
 
                     for(unsigned int i {0}; i<boss.size(); ++i)
                         {
-                            std::cout << "Pohyb bossa\n";
-                            boss[i].moveBoss(dt);
+                            //std::cout << "Pohyb bossa\n";
+                            //boss[i].moveBoss(dt);
                         }
 
 
@@ -397,7 +444,6 @@ int main()
                                 drops[i].sprite.setTexture(firerateSprite);
                                 fireDelayOriginal -= 0.02;
                                 ++pSprite.firerateLvl;
-                                std::cout << "Fire delay" << fireDelay << '\n';
                                 drops[i].pickedUp = true;
                             }
                             if(drops[i].ranNum == 1)
@@ -411,7 +457,6 @@ int main()
                                 drops[i].sprite.setTexture(accelerationSprite);
                                 acceleration += 2;
                                 ++pSprite.accLvl;
-                                std::cout << "Acceleration: " << acceleration << '\n';
                                 drops[i].pickedUp = true;
                             }
                         }

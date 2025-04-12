@@ -139,7 +139,7 @@ struct Boss
     float xMoveVector {0};
     float yMoveVector {0};
     float radius {100};
-
+    float health {500};
     Boss(float x, float y,float radiusInput)
     {
         if(radiusInput == 100)
@@ -171,9 +171,9 @@ struct Boss
 
     void moveBoss(float dt)
     {
-        shape.move({xMoveVector*dt*targSpeed,yMoveVector*dt*targSpeed});
-        xTarget = xTarget + xMoveVector*dt*targSpeed;
-        yTarget = yTarget + yMoveVector*dt*targSpeed;
+        shape.move({xMoveVector*dt*bossSpeed,yMoveVector*dt*bossSpeed});
+        xTarget = xTarget + xMoveVector*dt*bossSpeed;
+        yTarget = yTarget + yMoveVector*dt*bossSpeed;
     }
 };
 

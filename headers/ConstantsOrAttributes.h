@@ -12,7 +12,7 @@ int previousScore {0};
 int missed {0};
 constexpr float spawnRadius {1300.0f};
 float toSpawn {2};
-float difIncrease {0.01};
+float difIncrease {0.001};
 
 
 float fireDelay{0.25};
@@ -25,8 +25,10 @@ float radiusM {50};
 float radiusS {25};
 float secSinceSpawn{0};
 float targSpeed {0.15};
-float bossTimer {3};
-int astDamage {0};
+float bossSpeed {0.2};
+float bossTimer {6*60};
+int bossDamage {1000};
+int astDamage {10};
 bool bossSpawned {false};
 
 

@@ -55,6 +55,9 @@
 		<Unit filename="headers/Objects.h" />
 		<Unit filename="headers/Random.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="sprites/BossL.png" />
+		<Unit filename="sprites/BossM.png" />
+		<Unit filename="sprites/BossS.png" />
 		<Unit filename="sprites/asteroid_maly.png" />
 		<Unit filename="sprites/asteroid_stredny.png" />
 		<Unit filename="sprites/asteroid_velky.png" />

@@ -9,3 +9,5 @@ Ak loď vybuchne, hra sa dá reštartovať od začiatku bez potreby vypínania p
 
 ## Ukážky hrania
 
+! [Gif ukazka hrania] (gameplay1.gif)
+

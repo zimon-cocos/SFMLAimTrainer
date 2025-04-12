@@ -2,24 +2,23 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Debug" />
-	<File name="main.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="headers/ConstantsOrAttributes.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4268" topLine="124" />
+			<Cursor1 position="154" topLine="8" />
+		</Cursor>
+	</File>
+	<File name="main.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="19459" topLine="427" />
 		</Cursor>
 		<Folding>
-			<Collapse line="438" />
-			<Collapse line="469" />
-			<Collapse line="488" />
+			<Collapse line="387" />
+			<Collapse line="437" />
 		</Folding>
 	</File>
 	<File name="headers/Objects.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4500" topLine="108" />
-		</Cursor>
-	</File>
-	<File name="headers/ConstantsOrAttributes.h" open="1" top="1" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="154" topLine="0" />
+			<Cursor1 position="717" topLine="10" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

@@ -31,26 +31,16 @@ int main()
 
     std::vector<Projectile> projectiles;
     std::vector<Drop> drops;
-    /*sf::CircleShape gunRect;
-    gunRect.setRadius(15.0f);
-    gunRect.setFillColor(sf::Color::Red);
-    gunRect.setOrigin(gunRect.getGeometricCenter());
-    gunRect.setPosition({pSprite.xPlayer,pSprite.yPlayer});
-*/
-    //*************!!!!!!!!!!!!!!!!!*********************
-    sf::RenderWindow window (sf::VideoMode({width,height}),"Aim Trainer");
-    window.setFramerateLimit(framerate);
-    //*************!!!!!!!!!!!!!!!!!*********************
 
+    sf::RenderWindow window (sf::VideoMode({width,height}),"Asteroids");
+    window.setFramerateLimit(framerate);
 
     sf::Font font("fonts/Jersey_15/Jersey15-Regular.ttf");
-
     sf::Text text(font);
     text.setString("It works");
     text.setCharacterSize(24);
     text.setFillColor(sf::Color::Red);
     text.setPosition({width/2 - 80,30});
-
 
     sf::Text timerTxt(font);
     timerTxt.setString("placeholder");
@@ -95,12 +85,6 @@ int main()
     again.setOutlineThickness(2.0f);
     again.setOutlineColor(sf::Color::Red);
 
-
-
-
-
-
-
     sf::Clock clock;
     float dt {0};
 
@@ -128,9 +112,10 @@ int main()
 
                     auto mousePos = sf::Mouse::getPosition(window);
                     auto transMousePos = window.mapPixelToCoords(mousePos);
+                        //If the user clicks the play again text, reset some data
                         if(again.getGlobalBounds().contains(transMousePos))
                         {
-                            pSprite.blewUp = false;
+
                             score = 0;
                             previousScore = 0;
                             missed = 0;
@@ -146,6 +131,7 @@ int main()
                             projectiles.clear();
                             drops.clear();
 
+                            pSprite.blewUp = false;
                             pSprite.health = 100;
                             pSprite.firerateLvl = 1;
                             pSprite.accLvl = 1;
@@ -156,9 +142,6 @@ int main()
 
                         }
                     }
-
-
-
             while(!pSprite.blewUp)
             {
 
@@ -172,7 +155,7 @@ int main()
                     accTxt.setString("Aceleration level: " + std::to_string(pSprite.accLvl));
                     firerateTxt.setString("Firerate level: " + std::to_string(pSprite.firerateLvl));
 
-                    //casovac
+
                     if(static_cast<int>(bossTimer)%60<10)
                     {
                         timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(bossTimer)/60) + ":0" + std::to_string(static_cast<int>(bossTimer)%60));
@@ -181,8 +164,6 @@ int main()
                     {
                         timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(bossTimer)/60) + ":" + std::to_string(static_cast<int>(bossTimer)%60));
                     }
-
-
 
                     if(pSprite.xPlayer > width+50)
                     {
@@ -216,7 +197,7 @@ int main()
                     }
                     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
                     {
-                        //akceleracia
+                        //acceleration
                         if(movementSpeed < maxSpeed)
                         {
                             movementSpeed += acceleration*dt/2;
@@ -227,13 +208,10 @@ int main()
 
                     if(!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && movementSpeed > 0)
                     {
-                        //deakceleracia
+                        //deacceleration
                         movementSpeed -= deacceleration*dt/2;
                         pSprite.movePlayer(dt,movementSpeed);
                     }
-
-
-
 
                     astSpawn.setPosition({pSprite.xPlayer,pSprite.yPlayer});
                     float spriteRotation = pSprite.sprite.getRotation().asDegrees();
@@ -241,15 +219,11 @@ int main()
                     float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
                     float yGunRect = 40*std::cos(-degToRad(spriteRotation+180))+pSprite.yPlayer;
 
-                    //gunRect.setPosition({xGunRect,yGunRect});
-                    //gunRect.setRotation(pSprite.sprite.getRotation());
-
                     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && fireDelay<= 0)
                     {
                         projectiles.emplace_back(Projectile(xGunRect,yGunRect,pSprite.sprite.getRotation()));
                         fireDelay = fireDelayOriginal;
                     }
-
                     while(const std::optional event = window.pollEvent())
                     {
 
@@ -290,12 +264,8 @@ int main()
                     text.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
 
                     toSpawn = toSpawn - difIncrease*dt;
-                    //std::cout << "Difficulty: " << toSpawn << '\n';
                     if(secSinceSpawn>toSpawn && bossTimer >0)
                     {
-                        //targets.emplace_back(Random::get(0,600),Random::get(0,500));
-                        //float xGunRect = 40*std::sin(-degToRad(spriteRotation+180))+pSprite.xPlayer;
-                        //float yGunRect = 40*std::cos(-degToRad(spriteRotation+180))+pSprite.yPlayer;
                         int ranDegree = Random::get(0,360);
                         targets.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+pSprite.xPlayer,spawnRadius*std::cos(degToRad(ranDegree))+pSprite.yPlayer,100);
 
@@ -308,7 +278,6 @@ int main()
                     if(bossTimer < 0 && bossSpawned == false)
                     {
                         bossSpawned = true;
-                        std::cout << "Boss spawn\n";
                         int ranDegree = Random::get(0,360);
 
                         boss.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+pSprite.xPlayer,spawnRadius*std::cos(degToRad(ranDegree))+pSprite.yPlayer,100);
@@ -317,11 +286,8 @@ int main()
                     }
                     if(bossSpawned == true)
                     {
-
-
                         boss.back().xMoveVector = 5*(pSprite.xPlayer - boss.back().xTarget);
                         boss.back().yMoveVector = 5*(pSprite.yPlayer - boss.back().yTarget);
-
                         boss[0].moveBoss(dt);
 
                         for(unsigned int j {0}; j<projectiles.size();++j)
@@ -350,29 +316,22 @@ int main()
 
                         }
 
-                    //Detekcia kolizie boss tu
+                    //Collisions for boss
                             if(boss[0].shape.getGlobalBounds().findIntersection(pSprite.sprite.getGlobalBounds()))
                             {
-
-
                                 if(pSprite.health - bossDamage <= 0)
                                 {
                                     pSprite.blewUp = true;
                                     std::cout << "Kaboom\n";
                                 }
                                 pSprite.health -= bossDamage;
-
                             }
-
-
-                    //AAAAAAAAAAAAAABBBBBBBBBBCCCCCCCCCCCCDDDDDDDDDDd
                     }
 
                     for(unsigned int i {0}; i<projectiles.size();++i)
                         {
                             projectiles[i].moveProjectile(dt,30);
                         }
-
 
                    for(unsigned int i {0}; i<targets.size(); ++i)
                         {
@@ -383,26 +342,16 @@ int main()
                             ++missed;
                         }
 
-                    for(unsigned int i {0}; i<boss.size(); ++i)
-                        {
-                            //std::cout << "Pohyb bossa\n";
-                            //boss[i].moveBoss(dt);
-                        }
-
-
-
                         for(unsigned int j {0}; j<projectiles.size();++j)
                         {
                                 if(projectiles[j].shape.getGlobalBounds().findIntersection(targets[i].shape.getGlobalBounds()) && !projectiles[j].blickSum)
                                 {
                                         ++hitAmount;
-                                        //++score;
                                         score=score+10;
                                         targets[i].wasClicked = true;
                                         if(score % 100 == 0)
                                         {
                                             drops.emplace_back(targets[i].xTarget,targets[i].yTarget);
-                                            std::cout << "Drop created\n";
                                             goto dropCreated;
                                         }
                                         dropCreated:
@@ -491,8 +440,6 @@ int main()
                     pSprite.texWidth = 0;
                 }
 
-
-
                     //Render
                     window.clear(sf::Color::Black);
 
@@ -508,7 +455,6 @@ int main()
                         }
                     }
 
-
                     for(unsigned int i {0};i<drops.size();++i)
                     {
                         if(!(drops[i].pickedUp))
@@ -520,8 +466,6 @@ int main()
 
                     }
 
-
-
                     for(unsigned int i {0};i<projectiles.size();++i)
                     {
                         projectiles[i].lifetime = projectiles[i].lifetime + dt;
@@ -532,15 +476,12 @@ int main()
 
                     }
 
-
-
-
                     for(unsigned int i {0}; i<boss.size(); ++i)
                         {
                             window.draw(boss[i].shape);
                         }
 
-                    //Ai slop//
+
                     projectiles.erase(
                         std::remove_if(
                             projectiles.begin(),
@@ -550,7 +491,6 @@ int main()
                         projectiles.end()
                     );
 
-
                     targets.erase(
                         std::remove_if(
                             targets.begin(),
@@ -559,12 +499,8 @@ int main()
                         ),
                         targets.end()
                     );
-                    //Ai slop//
 
                     clock.restart();
-
-
-
 
                     window.draw(pSprite.sprite);
                     window.draw(astSpawn);
@@ -572,8 +508,6 @@ int main()
                     window.draw(hpTxt);
                     window.draw(firerateTxt);
                     window.draw(accTxt);
-
-
 
                     if(pSprite.blewUp)
                     {
@@ -588,12 +522,8 @@ int main()
 
                     window.display();
 
-
                 }
             }
 
-
-
     //delete window;
-
 }

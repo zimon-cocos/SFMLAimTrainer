@@ -22,6 +22,11 @@ sf::Texture bossS("sprites/BossS.png");
 
 
 
+
+
+
+
+
 struct Drop
 {
 

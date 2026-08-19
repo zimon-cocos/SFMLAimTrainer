@@ -121,11 +121,6 @@ public:
     int m_FRAME_HEIGHT {80};
     double m_FRAME_DURATION {0.05};
 
-
-
-    
-
-
 };
 
 
@@ -254,4 +249,73 @@ struct Target
         xTarget = xTarget + xMoveVector*dt*targSpeed;
         yTarget = yTarget + yMoveVector*dt*targSpeed;
     }
+};
+
+struct GUI
+{
+
+    sf::Sprite backgSprite{background};
+    sf::Font font{"fonts/Jersey_15/Jersey15-Regular.ttf"};
+    sf::Text hudTxt{font};
+    sf::Text timerTxt{font};  
+    sf::Text hpTxt{font};
+    sf::Text accTxt{font}; 
+    sf::Text firerateTxt{font};
+    sf::Text ambatuTxt{font};   
+
+    sf::Text againBtnTxt{font};       
+    sf::RectangleShape againBtn;   
+
+    GUI()
+    {
+        backgSprite.setPosition({0,0});
+
+        hudTxt.setString("It works");
+        hudTxt.setCharacterSize(24);
+        hudTxt.setFillColor(sf::Color::Red);
+        hudTxt.setPosition({width/2 - 80,30});
+
+        timerTxt.setString("placeholder");
+        timerTxt.setCharacterSize(30);
+        timerTxt.setFillColor(sf::Color::Red);
+        timerTxt.setPosition({width/2-120,60});    
+        
+        hpTxt.setString("placeholder");
+        hpTxt.setCharacterSize(24);
+        hpTxt.setFillColor(sf::Color::Red);
+        hpTxt.setPosition({675,30});
+      
+        accTxt.setString("placeholder");
+        accTxt.setCharacterSize(24);
+        accTxt.setFillColor(sf::Color::Red);
+        accTxt.setPosition({675,50});
+
+
+        firerateTxt.setString("placeholder");
+        firerateTxt.setCharacterSize(24);
+        firerateTxt.setFillColor(sf::Color::Red);
+        firerateTxt.setPosition({675,70});
+
+
+        ambatuTxt.setString("You blew up!");
+        ambatuTxt.setCharacterSize(48);
+        ambatuTxt.setFillColor(sf::Color::Magenta);
+        ambatuTxt.setPosition({width/2-100,height/2-100});
+
+
+        againBtn.setSize({290.0f,40.0f});
+        againBtn.setPosition({width/2-100-30,height/2-100 + 72});
+        againBtn.setFillColor(sf::Color::Transparent);
+        againBtn.setOutlineThickness(2.0f);
+        againBtn.setOutlineColor(sf::Color::Red);
+
+
+        againBtnTxt.setString("Play againBtn?");
+        againBtnTxt.setCharacterSize(72);
+        againBtnTxt.setFillColor(sf::Color::Magenta);
+        againBtnTxt.setPosition({width/2-100-30,height/2-100 +40});
+    }
+
+
+
 };

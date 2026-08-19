@@ -12,7 +12,7 @@
     int previousScore {0};
     int missed {0};
     constexpr float spawnRadius {1300.0f};
-    float toSpawn {2};
+    float spawnAsteroidInterval {2};
     float difIncrease {0.001};
 
 

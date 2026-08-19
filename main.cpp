@@ -13,91 +13,37 @@
 
 int main()
 {
+    Player playerObject{};
 
-    sf::Sprite backgSprite (background);
-    backgSprite.setPosition({0,0});
-
+    std::vector<Drop> drops;    
+    std::vector<Projectile> projectiles;
     std::vector<Target> targets;
     std::vector<Boss> boss;
 
-    Player playerObject{};
 
-    sf::CircleShape astSpawn;
-    astSpawn.setRadius(spawnRadius);
-    astSpawn.setFillColor(sf::Color::Transparent);
-    astSpawn.setOutlineColor(sf::Color::Blue);
-    astSpawn.setOutlineThickness(2.0f);
-    astSpawn.setOrigin(astSpawn.getGeometricCenter());
-
-    std::vector<Projectile> projectiles;
-    std::vector<Drop> drops;
+    sf::CircleShape asteroidSpawn;
+    asteroidSpawn.setRadius(spawnRadius);
+    asteroidSpawn.setFillColor(sf::Color::Transparent);
+    asteroidSpawn.setOutlineColor(sf::Color::Blue);
+    asteroidSpawn.setOutlineThickness(2.0f);
+    asteroidSpawn.setOrigin(asteroidSpawn.getGeometricCenter());
+    asteroidSpawn.setPosition({playerObject.sprite.getPosition().x, playerObject.sprite.getPosition().y});
 
     sf::RenderWindow window (sf::VideoMode({width,height}),"Asteroids");
     window.setFramerateLimit(framerate);
 
-    sf::Font font("fonts/Jersey_15/Jersey15-Regular.ttf");
-    sf::Text text(font);
-    text.setString("It works");
-    text.setCharacterSize(24);
-    text.setFillColor(sf::Color::Red);
-    text.setPosition({width/2 - 80,30});
-
-    sf::Text timerTxt(font);
-    timerTxt.setString("placeholder");
-    timerTxt.setCharacterSize(30);
-    timerTxt.setFillColor(sf::Color::Red);
-    timerTxt.setPosition({width/2-120,60});
-
-    sf::Text hpTxt(font);
-    hpTxt.setString("placeholder");
-    hpTxt.setCharacterSize(24);
-    hpTxt.setFillColor(sf::Color::Red);
-    hpTxt.setPosition({675,30});
-
-    sf::Text accTxt(font);
-    accTxt.setString("placeholder");
-    accTxt.setCharacterSize(24);
-    accTxt.setFillColor(sf::Color::Red);
-    accTxt.setPosition({675,50});
-
-    sf::Text firerateTxt(font);
-    firerateTxt.setString("placeholder");
-    firerateTxt.setCharacterSize(24);
-    firerateTxt.setFillColor(sf::Color::Red);
-    firerateTxt.setPosition({675,70});
-
-    sf::Text ambatuTxt(font);
-    ambatuTxt.setString("You blew up!");
-    ambatuTxt.setCharacterSize(48);
-    ambatuTxt.setFillColor(sf::Color::Magenta);
-    ambatuTxt.setPosition({width/2-100,height/2-100});
-
-    sf::RectangleShape againBtn;
-    againBtn.setSize({290.0f,40.0f});
-    againBtn.setPosition({width/2-100-30,height/2-100 + 72});
-    againBtn.setFillColor(sf::Color::Transparent);
-    againBtn.setOutlineThickness(2.0f);
-    againBtn.setOutlineColor(sf::Color::Red);
-
-    sf::Text againBtnTxt(font);
-    againBtnTxt.setString("Play againBtn?");
-    againBtnTxt.setCharacterSize(72);
-    againBtnTxt.setFillColor(sf::Color::Magenta);
-    againBtnTxt.setPosition({width/2-100-30,height/2-100 +40});
-
-
+    GUI guiObject{};
     sf::Clock clock;
     float dt {0};
 
     while(window.isOpen())
     {
-
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
         {
             auto mousePos = sf::Mouse::getPosition(window);
             auto transMousePos = window.mapPixelToCoords(mousePos);
             //If the user clicks the play againBtn text, reset some data
-            if(againBtn.getGlobalBounds().contains(transMousePos))
+            if(guiObject.againBtn.getGlobalBounds().contains(transMousePos))
             {
 
                 score = 0;
@@ -107,7 +53,7 @@ int main()
                 bossTimer = 6*60;
                 bossSpawned = false;
                 acceleration  = 12;
-                toSpawn = 2;
+                spawnAsteroidInterval = 2;
                 movementSpeed = 0;
 
                 boss.clear();
@@ -134,18 +80,18 @@ int main()
             fireDelay = fireDelay - dt;
             bossTimer = bossTimer - dt;
 
-            hpTxt.setString("Hull integrity: " + std::to_string(playerObject.health) + "%");
-            accTxt.setString("Aceleration level: " + std::to_string(playerObject.accLvl));
-            firerateTxt.setString("Firerate level: " + std::to_string(playerObject.firerateLvl));
+            guiObject.hpTxt.setString("Hull integrity: " + std::to_string(playerObject.health) + "%");
+            guiObject.accTxt.setString("Aceleration level: " + std::to_string(playerObject.accLvl));
+            guiObject.firerateTxt.setString("Firerate level: " + std::to_string(playerObject.firerateLvl));
 
 
             if(static_cast<int>(bossTimer)%60<10)
             {
-                timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(bossTimer)/60) + ":0" + std::to_string(static_cast<int>(bossTimer)%60));
+                guiObject.timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(bossTimer)/60) + ":0" + std::to_string(static_cast<int>(bossTimer)%60));
             }
             else
             {
-                timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(bossTimer)/60) + ":" + std::to_string(static_cast<int>(bossTimer)%60));
+                guiObject.timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(bossTimer)/60) + ":" + std::to_string(static_cast<int>(bossTimer)%60));
             }
 
             playerObject.handleScreenWrapping();
@@ -169,7 +115,6 @@ int main()
                 fireDelay = fireDelayOriginal;
             }
             
-            astSpawn.setPosition({playerObject.sprite.getPosition().x, playerObject.sprite.getPosition().y});
 
             while(const std::optional event = window.pollEvent())
             {
@@ -188,29 +133,10 @@ int main()
                 }
             }
 
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
+            guiObject.hudTxt.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
 
-                auto mousePos = sf::Mouse::getPosition(window);
-                auto transMousePos = window.mapPixelToCoords(mousePos);
-
-                for(unsigned int i {0}; i<targets.size();++i)
-                    {
-                        previousScore = score;
-                        if(targets[i].shape.getGlobalBounds().contains(transMousePos) && !(targets[i].wasClicked))
-                        {
-                            targets[i].shape.setFillColor(sf::Color::Red);
-                            targets[i].wasClicked = true;
-                            std::cout << targets[i].secondsExisted << '\n';
-                            ++score;
-
-                        }
-                    }
-
-            }
-            text.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
-
-            toSpawn = toSpawn - difIncrease*dt;
-            if(secSinceSpawn>toSpawn && bossTimer >0)
+            spawnAsteroidInterval = spawnAsteroidInterval - difIncrease*dt;
+            if(secSinceSpawn > spawnAsteroidInterval && bossTimer >0)
             {
                 int ranDegree = Random::get(0,360);
                 targets.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+playerObject.sprite.getPosition().x,spawnRadius*std::cos(degToRad(ranDegree))+playerObject.sprite.getPosition().y,100);
@@ -372,8 +298,7 @@ int main()
             window.clear(sf::Color::Black);
 
             //DRAWING
-
-            window.draw(backgSprite);
+            window.draw(guiObject.backgSprite);
             for(unsigned int i {0};i<targets.size();++i)
             {
                 if(!(targets[i].wasClicked))
@@ -383,14 +308,13 @@ int main()
                 }
             }
 
-            for(unsigned int i {0};i<drops.size();++i)
+            for(unsigned int i {0};i < drops.size();++i)
             {
                 if(!(drops[i].pickedUp))
                 {
                     window.draw(drops[i].shape);
                     window.draw(drops[i].sprite);
-
-                    }
+                }
 
             }
 
@@ -431,20 +355,20 @@ int main()
             clock.restart();
 
             window.draw(playerObject.sprite);
-            window.draw(astSpawn);
-            window.draw(text);
-            window.draw(hpTxt);
-            window.draw(firerateTxt);
-            window.draw(accTxt);
+            window.draw(asteroidSpawn);
+            window.draw(guiObject.hudTxt);
+            window.draw(guiObject.hpTxt);
+            window.draw(guiObject.firerateTxt);
+            window.draw(guiObject.accTxt);
 
             if(playerObject.blewUp)
             {
-                window.draw(ambatuTxt);
-                window.draw(againBtnTxt);
+                window.draw(guiObject.ambatuTxt);
+                window.draw(guiObject.againBtnTxt);
             }
             if(bossTimer < 301 && bossTimer > 0)
             {
-                window.draw(timerTxt);
+                window.draw(guiObject.timerTxt);
             }
 
 
@@ -453,5 +377,4 @@ int main()
         }
     }
 
-    //delete window;
 }

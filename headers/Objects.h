@@ -19,18 +19,8 @@ sf::Texture bossL("sprites/BossL.png");
 sf::Texture bossM("sprites/BossM.png");
 sf::Texture bossS("sprites/BossS.png");
 
-
-
-
-
-
-
-
-
 struct Drop
 {
-
-
     sf::RectangleShape shape;
     sf::Sprite sprite {accelerationSprite};
     float xDrop {0};
@@ -64,41 +54,77 @@ struct Drop
     }
 };
 
-
-
 struct Player
 {
-    float xPlayer {0};
-    float yPlayer {0};
-    bool blewUp {0};
-    sf::Sprite sprite{shipTexture};
-    int texWidth {0};
-    float texTimer {0};
-    int health {100};
-    int accLvl {1};
-    int firerateLvl {1};
-    Player(float xPos, float yPos)
+
+
+public:
+    Player()
     {
-
-        sprite.setPosition({xPos,yPos});
-        xPlayer = xPos;
-        yPlayer = yPos;
+        sprite.setPosition({300, 300});
         sprite.setOrigin({25.0f,40.0f});
-    }
+        sprite.setTextureRect({ {0, 0}, {50, 80} });
+        sprite.setScale({1.2,1.2});
 
+    }
 
     void rotatePlayer(int degrees,float dt,int rotationSpeed)
     {
         sprite.rotate(dt*rotationSpeed*(sf::degrees(degrees)));
     }
 
-    void movePlayer(float dt,int movementSpeed)
+
+    float getGunRectXPos() {return 40 * std::sin( -degToRad(sprite.getRotation().asDegrees() + 180) ) + sprite.getPosition().x; }
+    float getGunRectYPos() {return 40 * std::cos( -degToRad(sprite.getRotation().asDegrees() + 180) ) + sprite.getPosition().y; }
+
+    void handleScreenWrapping()
     {
-            sprite.move({movementSpeed*(40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180))+xPlayer - xPlayer)*dt,
-                        movementSpeed*(40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180))+yPlayer - yPlayer)*dt});
-            xPlayer = sprite.getPosition().x;
-            yPlayer = sprite.getPosition().y;
+        if (sprite.getPosition().x > width + 50)    {sprite.setPosition({-50.0f, sprite.getPosition().y});}
+        if (sprite.getPosition().y > height + 50)   {sprite.setPosition({sprite.getPosition().x, -50.0});}
+        if (sprite.getPosition().x < -50.0)         {sprite.setPosition({width + 50, sprite.getPosition().y});}
+        if (sprite.getPosition().y < -50.0)         {sprite.setPosition({sprite.getPosition().x, height + 50});}      
     }
+
+    void movePlayer(float dt, int movementSpeed)
+    {
+            sprite.move({movementSpeed*(40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180)) + sprite.getPosition().x - sprite.getPosition().x) * dt,
+                         movementSpeed*(40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180)) + sprite.getPosition().y - sprite.getPosition().y) * dt});
+    }
+    
+    void handleAnimationForward()
+    {
+        if(texTimer >= m_FRAME_DURATION)
+        {
+            texWidth += m_FRAME_WIDTH;
+            if(texWidth >= shipTexture.getSize().x) {texWidth = 0; }
+
+            sprite.setTextureRect({ {texWidth, 0} , {m_FRAME_WIDTH, m_FRAME_HEIGHT} });
+            texTimer = 0;
+        }
+    }
+    
+
+    bool blewUp {false};
+    sf::Sprite sprite{shipTexture};
+
+    int texWidth {0};
+    float texTimer {0};
+
+    int health {100};
+    int accLvl {1};
+    int firerateLvl {1};
+
+    float m_movementSpeed {0};
+    float m_acceleration {0};
+
+    int m_FRAME_WIDTH {50};
+    int m_FRAME_HEIGHT {80};
+    double m_FRAME_DURATION {0.05};
+
+
+
+    
+
 
 };
 
@@ -111,7 +137,7 @@ struct Projectile
     float lifetime {0};
     bool blickSum {false};
 
-    Projectile(float xPos, float yPos,sf::Angle Rotation)
+    Projectile(float xPos, float yPos, sf::Angle Rotation)
     {
         shape.setTexture(&projectile);
         shape.setRadius(4.0f);
@@ -124,7 +150,7 @@ struct Projectile
 
 
     }
-    void moveProjectile(float dt,int movementSpeed)
+    void moveProjectile(float dt, int movementSpeed)
     {
             shape.move({movementSpeed*(40*std::sin(degToRad(-shape.getRotation().asDegrees()+180))+xProjectile - xProjectile)*dt,
                         movementSpeed*(40*std::cos(degToRad(-shape.getRotation().asDegrees()+180))+yProjectile - yProjectile)*dt});

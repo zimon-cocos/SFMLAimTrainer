@@ -21,15 +21,16 @@ sf::Texture bossS("sprites/BossS.png");
 
 struct Drop
 {
+    enum DropType {firerate, armor, acceleration};
+
     sf::RectangleShape shape;
     sf::Sprite sprite {accelerationSprite};
-    float xDrop {0};
-    float yDrop {0};
+
     bool pickedUp {false};
-    int ranNum {Random::get(0,2)};
+    int dropType {Random::get(0, 2)};
     Drop(float xDrop, float yDrop)
     {
-        ranNum = Random::get(0,2);
+        dropType = Random::get(0,2);
         shape.setSize({40.0f,40.0f});
         shape.setFillColor(sf::Color::Transparent);
         shape.setOutlineColor(sf::Color::White);
@@ -37,18 +38,9 @@ struct Drop
         shape.setPosition({xDrop,yDrop});
         sprite.setPosition({xDrop+5,yDrop+5});
 
-        if(ranNum == 0)
-        {
-            sprite.setTexture(firerateSprite);
-        }
-        if(ranNum == 1)
-        {
-            sprite.setTexture(armorSprite);
-        }
-        if(ranNum == 2)
-        {
-            sprite.setTexture(accelerationSprite);
-        }
+        if(dropType == 0) {sprite.setTexture(firerateSprite); }
+        if(dropType == 1) {sprite.setTexture(armorSprite); }
+        if(dropType == 2) {sprite.setTexture(accelerationSprite); }
 
 
     }
@@ -57,8 +49,6 @@ struct Drop
 struct Player
 {
 
-
-public:
     Player()
     {
         sprite.setPosition({300, 300});
@@ -102,6 +92,18 @@ public:
             texTimer = 0;
         }
     }
+
+    void reset(float startX, float startY)
+    {
+        blewUp = false;
+        health = 100;
+        firerateLvl = 1;
+        accLvl = 1;
+        sprite.setPosition({startX, startY});
+        m_movementSpeed = 0;
+        m_acceleration = 0;
+    }
+
     
 
     bool blewUp {false};
@@ -195,8 +197,11 @@ struct Boss
     bool wasClicked {false};
 
 
-    void moveBoss(float dt)
+    void moveBoss(float dt, const Player& playerObject)
     {
+        xMoveVector = 5*(playerObject.sprite.getPosition().x - xTarget);
+        yMoveVector = 5*(playerObject.sprite.getPosition().y - yTarget);
+
         shape.move({xMoveVector*dt*bossSpeed,yMoveVector*dt*bossSpeed});
         xTarget = xTarget + xMoveVector*dt*bossSpeed;
         yTarget = yTarget + yMoveVector*dt*bossSpeed;
@@ -248,6 +253,15 @@ struct Target
         shape.move({xMoveVector*dt*targSpeed,yMoveVector*dt*targSpeed});
         xTarget = xTarget + xMoveVector*dt*targSpeed;
         yTarget = yTarget + yMoveVector*dt*targSpeed;
+    }
+    int targetExpiredOrNot()
+    {
+        if ((secondsExisted > maxTargetLifetime) && !(wasClicked))
+        {
+            wasClicked = true;
+            return 1;
+        }
+        else return 0;
     }
 };
 
@@ -314,6 +328,13 @@ struct GUI
         againBtnTxt.setCharacterSize(72);
         againBtnTxt.setFillColor(sf::Color::Magenta);
         againBtnTxt.setPosition({width/2-100-30,height/2-100 +40});
+    }
+
+    void setLevelsTxt(Player& playerObject)
+    {
+        hpTxt.setString("Hull integrity: " + std::to_string(playerObject.health) + "%");
+        accTxt.setString("Aceleration level: " + std::to_string(playerObject.accLvl));
+        firerateTxt.setString("Firerate level: " + std::to_string(playerObject.firerateLvl));    
     }
 
 

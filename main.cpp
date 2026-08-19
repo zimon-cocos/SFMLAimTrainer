@@ -42,6 +42,7 @@ int main()
         {
             auto mousePos = sf::Mouse::getPosition(window);
             auto transMousePos = window.mapPixelToCoords(mousePos);
+
             //If the user clicks the play againBtn text, reset some data
             if(guiObject.againBtn.getGlobalBounds().contains(transMousePos))
             {
@@ -52,20 +53,14 @@ int main()
                 fireDelayOriginal = 0.25;
                 bossTimer = 6*60;
                 bossSpawned = false;
-                acceleration  = 12;
                 spawnAsteroidInterval = 2;
-                movementSpeed = 0;
 
                 boss.clear();
                 targets.clear();
                 projectiles.clear();
                 drops.clear();
 
-                playerObject.blewUp = false;
-                playerObject.health = 100;
-                playerObject.firerateLvl = 1;
-                playerObject.accLvl = 1;
-                playerObject.sprite.setPosition({width/2,height/2});
+                playerObject.reset(width / 2, height / 2);
 
 
             }
@@ -80,10 +75,7 @@ int main()
             fireDelay = fireDelay - dt;
             bossTimer = bossTimer - dt;
 
-            guiObject.hpTxt.setString("Hull integrity: " + std::to_string(playerObject.health) + "%");
-            guiObject.accTxt.setString("Aceleration level: " + std::to_string(playerObject.accLvl));
-            guiObject.firerateTxt.setString("Firerate level: " + std::to_string(playerObject.firerateLvl));
-
+            guiObject.setLevelsTxt(playerObject);
 
             if(static_cast<int>(bossTimer)%60<10)
             {
@@ -101,13 +93,13 @@ int main()
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {playerObject.rotatePlayer(1, dt, rotationSpeed); }
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
             {
-                if(movementSpeed < maxSpeed) {movementSpeed += acceleration*dt/2; }
-                playerObject.movePlayer(dt,movementSpeed);
+                if(playerObject.m_movementSpeed < maxSpeed) {playerObject.m_movementSpeed += playerObject.m_acceleration*dt/2; }
+                playerObject.movePlayer(dt,playerObject.m_movementSpeed);
             }
-            if(!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && movementSpeed > 0)
+            if(!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && playerObject.m_movementSpeed > 0)
             {
-                movementSpeed -= deacceleration*dt/2;
-                playerObject.movePlayer(dt,movementSpeed);
+                playerObject.m_movementSpeed -= deacceleration*dt/2;
+                playerObject.movePlayer(dt,playerObject.m_movementSpeed);
             }
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && fireDelay <= 0)
             {
@@ -135,10 +127,10 @@ int main()
 
             guiObject.hudTxt.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
 
-            spawnAsteroidInterval = spawnAsteroidInterval - difIncrease*dt;
-            if(secSinceSpawn > spawnAsteroidInterval && bossTimer >0)
+            spawnAsteroidInterval = spawnAsteroidInterval - difIncrease * dt;
+            if(secSinceSpawn > spawnAsteroidInterval && bossTimer > 0)
             {
-                int ranDegree = Random::get(0,360);
+                int ranDegree = Random::get(0, 360);
                 targets.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+playerObject.sprite.getPosition().x,spawnRadius*std::cos(degToRad(ranDegree))+playerObject.sprite.getPosition().y,100);
 
                 targets.back().xMoveVector = (playerObject.sprite.getPosition().x - targets.back().xTarget);
@@ -157,37 +149,33 @@ int main()
 
             if(bossSpawned == true)
             {
-                boss.back().xMoveVector = 5*(playerObject.sprite.getPosition().x - boss.back().xTarget);
-                boss.back().yMoveVector = 5*(playerObject.sprite.getPosition().y - boss.back().yTarget);
-                boss[0].moveBoss(dt);
+                boss[0].moveBoss(dt, playerObject);
 
-                for(unsigned int j {0}; j<projectiles.size();++j)
+                for(auto& curr_projectile : projectiles)
                 {
-                    if(projectiles[j].shape.getGlobalBounds().findIntersection(boss[0].shape.getGlobalBounds()) && !projectiles[j].blickSum)
+                    if(curr_projectile.shape.getGlobalBounds().findIntersection(boss[0].shape.getGlobalBounds()) && !curr_projectile.blickSum)
                     {
-                        boss[0].health-= 1;
-                        std::cerr << "Bos health: " << boss[0].health << '\n';
+                        boss[0].health -= 1;
+                        std::cerr << "Boss health: " << boss[0].health << '\n';
 
-                        if(boss[0].health<250)
+                        if(boss[0].health < 250)
                         {
                             boss[0].shape.setRadius(50);
-                            boss[0].shape.setTextureRect(sf::IntRect({0,0},{100,100}));
+                            boss[0].shape.setTextureRect(sf::IntRect({0,0}, {100,100}));
                             boss[0].shape.setTexture(&bossM);
                         }
-                        if(boss[0].health<100)
+                        if(boss[0].health < 100)
                         {
                             boss[0].shape.setRadius(25);
-                            boss[0].shape.setTextureRect(sf::IntRect({0,0},{50,50}));
+                            boss[0].shape.setTextureRect(sf::IntRect({0,0}, {50,50}));
                             boss[0].shape.setTexture(&bossS);
                         }
 
-                        projectiles[j].blickSum = true;
+                        curr_projectile.blickSum = true;
                     }
-
-
                 }
 
-                //Collisions for boss
+                // Collisions for boss
                 if(boss[0].shape.getGlobalBounds().findIntersection(playerObject.sprite.getGlobalBounds()))
                 {
                     if(playerObject.health - bossDamage <= 0)
@@ -199,47 +187,38 @@ int main()
                 }
             }
 
-            for(unsigned int i {0}; i<projectiles.size();++i)
+            for (auto& curr_projectile : projectiles) {curr_projectile.moveProjectile(dt, 30); }
+    
+            // handle asteroid (target) interactions
+            for(auto& curr_target : targets)
             {
-                projectiles[i].moveProjectile(dt, 30);
-            }
+                curr_target.moveTarget(dt);
+                missed += curr_target.targetExpiredOrNot();
 
-            for(unsigned int i {0}; i<targets.size(); ++i)
-            {
-                targets[i].moveTarget(dt);
-                if((targets[i].secondsExisted >= maxTargetLifetime) && !(targets[i].wasClicked))
-                {
-                    targets[i].wasClicked = true;
-                    ++missed;
-                }
 
-                for(unsigned int j {0}; j<projectiles.size();++j)
+                for(auto& curr_projectile : projectiles)
                 {
-                        if(projectiles[j].shape.getGlobalBounds().findIntersection(targets[i].shape.getGlobalBounds()) && !projectiles[j].blickSum)
+                    if(curr_projectile.shape.getGlobalBounds().findIntersection(curr_target.shape.getGlobalBounds()) && !curr_projectile.blickSum)
+                    {
+                        score += 10;
+                        curr_target.wasClicked = true;
+                        if(score % 100 == 0) {drops.emplace_back(curr_target.xTarget, curr_target.yTarget); }
+
+                        if(curr_target.radius > 25)
                         {
-                            score=score+10;
-                            targets[i].wasClicked = true;
-                            if(score % 100 == 0)
-                            {
-                                drops.emplace_back(targets[i].xTarget,targets[i].yTarget);
-                                goto dropCreated;
-                            }
-                            dropCreated:
-                            if(targets[i].radius>25)
-                            {
-                                targets.emplace_back(targets[i].xTarget,targets[i].yTarget,targets[i].radius/2);
-                                targets.back().xMoveVector = (playerObject.sprite.getPosition().x - targets.back().xTarget);
-                                targets.back().yMoveVector = (playerObject.sprite.getPosition().y - targets.back().yTarget);
-                            }
-                            projectiles[j].blickSum = true;
+                            targets.emplace_back(curr_target.xTarget, curr_target.yTarget, curr_target.radius/2);
+                            targets.back().xMoveVector = (playerObject.sprite.getPosition().x - targets.back().xTarget);
+                            targets.back().yMoveVector = (playerObject.sprite.getPosition().y - targets.back().yTarget);
                         }
+                        curr_projectile.blickSum = true;
+                    }
                 }
+
                 if(!playerObject.blewUp)
                 {
-                    if(targets[i].shape.getGlobalBounds().findIntersection(playerObject.sprite.getGlobalBounds()) && !targets[i].wasClicked)
+                    if(curr_target.shape.getGlobalBounds().findIntersection(playerObject.sprite.getGlobalBounds()) && !curr_target.wasClicked)
                     {
-
-                        targets[i].wasClicked = true;
+                        curr_target.wasClicked = true;
                         if(playerObject.health - astDamage <= 0)
                         {
                             playerObject.blewUp = true;
@@ -248,35 +227,29 @@ int main()
                         playerObject.health -= astDamage;
 
                     }
-
-
                 }
             }
-
-
-            for(unsigned int i {0}; i<drops.size(); ++i)
+            // handle drop interactions
+            for(auto& curr_drop: drops)
             {
-                if(drops[i].shape.getGlobalBounds().findIntersection(playerObject.sprite.getGlobalBounds()) && !drops[i].pickedUp)
+                if(curr_drop.shape.getGlobalBounds().findIntersection(playerObject.sprite.getGlobalBounds()) && !curr_drop.pickedUp)
                 {
-                    if(drops[i].ranNum == 0)
+                    if(curr_drop.dropType == curr_drop.firerate)
                     {
-                        drops[i].sprite.setTexture(firerateSprite);
                         fireDelayOriginal -= 0.02;
                         ++playerObject.firerateLvl;
-                        drops[i].pickedUp = true;
+                        curr_drop.pickedUp = true;
                     }
-                    if(drops[i].ranNum == 1)
+                    if(curr_drop.dropType == curr_drop.armor)
                     {
-                        drops[i].sprite.setTexture(armorSprite);
                         playerObject.health += astDamage;
-                        drops[i].pickedUp = true;
+                        curr_drop.pickedUp = true;
                     }
-                    if(drops[i].ranNum == 2)
+                    if(curr_drop.dropType == curr_drop.acceleration)
                     {
-                        drops[i].sprite.setTexture(accelerationSprite);
                         acceleration += 2;
                         ++playerObject.accLvl;
-                        drops[i].pickedUp = true;
+                        curr_drop.pickedUp = true;
                     }
                 }
             }
@@ -308,12 +281,12 @@ int main()
                 }
             }
 
-            for(unsigned int i {0};i < drops.size();++i)
+            for(auto& curr_drop: drops)
             {
-                if(!(drops[i].pickedUp))
+                if(!(curr_drop.pickedUp))
                 {
-                    window.draw(drops[i].shape);
-                    window.draw(drops[i].sprite);
+                    window.draw(curr_drop.shape);
+                    window.draw(curr_drop.sprite);
                 }
 
             }
@@ -370,7 +343,6 @@ int main()
             {
                 window.draw(guiObject.timerTxt);
             }
-
 
             window.display();
 

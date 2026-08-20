@@ -29,7 +29,7 @@
     float secSinceSpawn{0};
     float targSpeed {0.15};
     float bossSpeed {0.2};
-    float bossTimer {6*60};
+    float bossTimer {5};
 
     int astDamage {10};
     bool bossSpawned {false};

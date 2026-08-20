@@ -131,10 +131,10 @@ int main()
             if(secSinceSpawn > spawnAsteroidInterval && bossTimer > 0)
             {
                 int ranDegree = Random::get(0, 360);
-                targets.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+playerObject.sprite.getPosition().x,spawnRadius*std::cos(degToRad(ranDegree))+playerObject.sprite.getPosition().y,100);
+                targets.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+playerObject.sprite.getPosition().x,spawnRadius*std::cos(degToRad(ranDegree)) + playerObject.sprite.getPosition().y,100);
 
-                targets.back().xMoveVector = (playerObject.sprite.getPosition().x - targets.back().xTarget);
-                targets.back().yMoveVector = (playerObject.sprite.getPosition().y - targets.back().yTarget);
+                targets.back().xMoveVector = (playerObject.sprite.getPosition().x - targets.back().shape.getPosition().x);
+                targets.back().yMoveVector = (playerObject.sprite.getPosition().y - targets.back().shape.getPosition().y);
 
                 secSinceSpawn = 0;
             }
@@ -143,7 +143,7 @@ int main()
             {
                 bossSpawned = true;
                 int ranDegree = Random::get(0,360);
-                boss.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+playerObject.sprite.getPosition().x,spawnRadius*std::cos(degToRad(ranDegree))+playerObject.sprite.getPosition().y,100);
+                boss.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+playerObject.sprite.getPosition().x,spawnRadius*std::cos(degToRad(ranDegree)) + playerObject.sprite.getPosition().y,100);
 
             }
 
@@ -202,13 +202,13 @@ int main()
                     {
                         score += 10;
                         curr_target.wasClicked = true;
-                        if(score % 100 == 0) {drops.emplace_back(curr_target.xTarget, curr_target.yTarget); }
+                        if(score % 100 == 0) {drops.emplace_back(curr_target.shape.getPosition().x, curr_target.shape.getPosition().y); }
 
                         if(curr_target.radius > 25)
                         {
-                            targets.emplace_back(curr_target.xTarget, curr_target.yTarget, curr_target.radius/2);
-                            targets.back().xMoveVector = (playerObject.sprite.getPosition().x - targets.back().xTarget);
-                            targets.back().yMoveVector = (playerObject.sprite.getPosition().y - targets.back().yTarget);
+                            targets.emplace_back(curr_target.shape.getPosition().x, curr_target.shape.getPosition().y, curr_target.radius/2);
+                            targets.back().xMoveVector = (playerObject.sprite.getPosition().x - targets.back().shape.getPosition().x);
+                            targets.back().yMoveVector = (playerObject.sprite.getPosition().y - targets.back().shape.getPosition().y);
                         }
                         curr_projectile.blickSum = true;
                     }

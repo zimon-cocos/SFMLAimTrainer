@@ -38,10 +38,9 @@ struct Drop
         shape.setPosition({xDrop,yDrop});
         sprite.setPosition({xDrop+5,yDrop+5});
 
-        if(dropType == 0) {sprite.setTexture(firerateSprite); }
-        if(dropType == 1) {sprite.setTexture(armorSprite); }
-        if(dropType == 2) {sprite.setTexture(accelerationSprite); }
-
+        if(dropType == firerate) {sprite.setTexture(firerateSprite); }
+        if(dropType == armor) {sprite.setTexture(armorSprite); }
+        if(dropType == acceleration) {sprite.setTexture(accelerationSprite); }
 
     }
 };
@@ -55,13 +54,9 @@ struct Player
         sprite.setOrigin({25.0f,40.0f});
         sprite.setTextureRect({ {0, 0}, {50, 80} });
         sprite.setScale({1.2,1.2});
-
     }
 
-    void rotatePlayer(int degrees,float dt,int rotationSpeed)
-    {
-        sprite.rotate(dt*rotationSpeed*(sf::degrees(degrees)));
-    }
+    void rotatePlayer(int degrees,float dt,int rotationSpeed) {sprite.rotate(dt*rotationSpeed*(sf::degrees(degrees))); }
 
 
     float getGunRectXPos() {return 40 * std::sin( -degToRad(sprite.getRotation().asDegrees() + 180) ) + sprite.getPosition().x; }
@@ -121,7 +116,7 @@ struct Player
 
     int m_FRAME_WIDTH {50};
     int m_FRAME_HEIGHT {80};
-    double m_FRAME_DURATION {0.05};
+    float m_FRAME_DURATION {0.05};
 
 };
 
@@ -151,104 +146,49 @@ struct Projectile
 
 };
 
-
-struct Boss
-{
-    sf::CircleShape shape;
-
-    float xTarget {0};
-    float yTarget {0};
-    float xMoveVector {0};
-    float yMoveVector {0};
-    float radius {100};
-    float health {500};
-    Boss(float x, float y,float radiusInput)
-    {
-        if(radiusInput == 100)
-        {
-            shape.setTexture(&bossL);
-            shape.setTextureRect(sf::IntRect({0,0},{200,200}));
-        }
-        else if(radiusInput == 50)
-        {
-            shape.setTexture(&bossM);
-            shape.setTextureRect(sf::IntRect({0,0},{100,100}));
-        }
-        else
-        {
-            shape.setTexture(&bossS);
-            shape.setTextureRect(sf::IntRect({0,0},{50,50}));
-        }
-        radius = radiusInput;
-        shape.setPosition({x,y});
-        shape.setRadius(radius);
-        shape.setOrigin(shape.getGeometricCenter());
-        xTarget = x;
-        yTarget = y;
-    }
-
-    float secondsExisted {0};
-    bool wasClicked {false};
-
-
-    void moveBoss(float dt, const Player& playerObject)
-    {
-        xMoveVector = 5*(playerObject.sprite.getPosition().x - xTarget);
-        yMoveVector = 5*(playerObject.sprite.getPosition().y - yTarget);
-
-        shape.move({xMoveVector*dt*bossSpeed,yMoveVector*dt*bossSpeed});
-        xTarget = xTarget + xMoveVector*dt*bossSpeed;
-        yTarget = yTarget + yMoveVector*dt*bossSpeed;
-    }
-};
-
-
 struct Target
 {
     sf::CircleShape shape;
 
-    float xTarget {0};
-    float yTarget {0};
     float xMoveVector {0};
     float yMoveVector {0};
     float radius {100};
 
-    Target(float x, float y,float radiusInput)
-    {
-        if(radiusInput == 100)
-        {
-            shape.setTexture(&astTexL);
-            shape.setTextureRect(sf::IntRect({0,0},{200,200}));
-        }
-        else if(radiusInput == 50)
-        {
-            shape.setTexture(&astTexM);
-            shape.setTextureRect(sf::IntRect({0,0},{100,100}));
-        }
-        else
-        {
-            shape.setTexture(&astTexS);
-            shape.setTextureRect(sf::IntRect({0,0},{50,50}));
-        }
-        radius = radiusInput;
-        shape.setPosition({x,y});
-        shape.setRadius(radius);
-        shape.setOrigin(shape.getGeometricCenter());
-        xTarget = x;
-        yTarget = y;
-    }
-
     float secondsExisted {0};
     bool wasClicked {false};
 
-
-    void moveTarget(float dt)
+    Target(float x = 0.0, float y = 0.0, float radiusInput = 100.0,
+            const sf::Texture* astTexParamS = &astTexS,
+            const sf::Texture* astTexParamM = &astTexM,
+            const sf::Texture* astTexParamL = &astTexL
+            )
     {
-        shape.move({xMoveVector*dt*targSpeed,yMoveVector*dt*targSpeed});
-        xTarget = xTarget + xMoveVector*dt*targSpeed;
-        yTarget = yTarget + yMoveVector*dt*targSpeed;
+        if(radiusInput == 100)
+        {
+            shape.setTexture(astTexParamL);
+            shape.setTextureRect(sf::IntRect({0,0}, {200,200}));
+        }
+        else if(radiusInput == 50)
+        {
+            shape.setTexture(astTexParamM);
+            shape.setTextureRect(sf::IntRect({0,0}, {100,100}));
+        }
+        else
+        {
+            shape.setTexture(astTexParamS);
+            shape.setTextureRect(sf::IntRect({0,0}, {50,50}));
+        }
+        radius = radiusInput;
+        shape.setPosition({x, y});
+        shape.setRadius(radius);
+        shape.setOrigin(shape.getGeometricCenter());
     }
-    int targetExpiredOrNot()
+
+
+
+    void moveTarget(float dt) {shape.move({xMoveVector * dt * targSpeed, yMoveVector * dt * targSpeed}); }
+
+    int targetExpiredOrNot() // has to be int, the return value is added to missed asteroids count
     {
         if ((secondsExisted > maxTargetLifetime) && !(wasClicked))
         {
@@ -256,6 +196,31 @@ struct Target
             return 1;
         }
         else return 0;
+    }
+};
+
+struct Boss : public Target
+{
+
+    float xTarget {0};
+    float yTarget {0};
+
+    float health {500};
+    Boss(float x, float y, float radiusInput)
+    : Target(x, y, radiusInput, &bossS, &bossM, &bossL),
+    xTarget {x},
+    yTarget {y}
+    {
+    }
+    
+    void moveBoss(float dt, const Player& playerObject)
+    {
+        xMoveVector = 5*(playerObject.sprite.getPosition().x - xTarget);
+        yMoveVector = 5*(playerObject.sprite.getPosition().y - yTarget);
+        
+        shape.move({xMoveVector*dt*bossSpeed,yMoveVector*dt*bossSpeed});
+        xTarget = xTarget + xMoveVector*dt*bossSpeed;
+        yTarget = yTarget + yMoveVector*dt*bossSpeed;
     }
 };
 
@@ -318,7 +283,7 @@ struct GUI
         againBtn.setOutlineColor(sf::Color::Red);
 
 
-        againBtnTxt.setString("Play againBtn?");
+        againBtnTxt.setString("Play again?");
         againBtnTxt.setCharacterSize(72);
         againBtnTxt.setFillColor(sf::Color::Magenta);
         againBtnTxt.setPosition({width/2-100-30,height/2-100 +40});

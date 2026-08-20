@@ -16,8 +16,11 @@
     float difIncrease {0.001};
 
 
-    float fireDelay{0.25};
-    float fireDelayOriginal {0.25};
+    float secSinceFiring {0.25};
+    float fireDelay {0.25};
+    double maxProjectileLifetime {0.33};
+    int projectileSpeed {30};
+
 
 
     float radiusL {100};

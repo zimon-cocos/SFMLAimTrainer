@@ -2,7 +2,7 @@
 #include "Functions.h"
 #include "ConstantsOrAttributes.h"
 
-sf::Texture projectile ("sprites/projectile.png");
+sf::Texture projectileSprite ("sprites/projectile.png");
 sf::Texture shipTexture("sprites/ship_sheet.png");
 
 sf::Texture background("sprites/pozadieMenej.png");
@@ -77,8 +77,8 @@ struct Player
 
     void movePlayer(float dt, int movementSpeed)
     {
-            sprite.move({movementSpeed*(40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180)) + sprite.getPosition().x - sprite.getPosition().x) * dt,
-                         movementSpeed*(40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180)) + sprite.getPosition().y - sprite.getPosition().y) * dt});
+            sprite.move({movementSpeed*(40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180))) * dt,
+                         movementSpeed*(40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180))) * dt});
     }
     
     void handleAnimationForward()
@@ -117,7 +117,7 @@ struct Player
     int firerateLvl {1};
 
     float m_movementSpeed {0};
-    float m_acceleration {0};
+    float m_acceleration {12};
 
     int m_FRAME_WIDTH {50};
     int m_FRAME_HEIGHT {80};
@@ -129,30 +129,24 @@ struct Player
 struct Projectile
 {
     sf::CircleShape shape;
-    float xProjectile {0};
-    float yProjectile {0};
+
     float lifetime {0};
     bool blickSum {false};
 
     Projectile(float xPos, float yPos, sf::Angle Rotation)
     {
-        shape.setTexture(&projectile);
+        shape.setTexture(&projectileSprite);
         shape.setRadius(4.0f);
         shape.setOrigin(shape.getGeometricCenter());
         shape.setFillColor(sf::Color::Green);
-        shape.setPosition({xPos,yPos});
+        shape.setPosition({xPos, yPos});
         shape.setRotation(Rotation);
-        xProjectile = xPos;
-        yProjectile = yPos;
-
-
     }
+
     void moveProjectile(float dt, int movementSpeed)
     {
-            shape.move({movementSpeed*(40*std::sin(degToRad(-shape.getRotation().asDegrees()+180))+xProjectile - xProjectile)*dt,
-                        movementSpeed*(40*std::cos(degToRad(-shape.getRotation().asDegrees()+180))+yProjectile - yProjectile)*dt});
-            xProjectile = shape.getPosition().x;
-            yProjectile = shape.getPosition().y;
+            shape.move({movementSpeed * (40 * std::sin(degToRad(-shape.getRotation().asDegrees() + 180))) * dt,
+                        movementSpeed * (40 * std::cos(degToRad(-shape.getRotation().asDegrees() + 180))) * dt});
     }
 
 };

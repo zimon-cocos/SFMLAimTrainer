@@ -50,7 +50,7 @@ int main()
                 score = 0;
                 previousScore = 0;
                 missed = 0;
-                fireDelayOriginal = 0.25;
+                fireDelay = 0.25;
                 bossTimer = 6*60;
                 bossSpawned = false;
                 spawnAsteroidInterval = 2;
@@ -72,7 +72,7 @@ int main()
             sf::Time timeElapsed = clock.getElapsedTime();
             dt = timeElapsed.asSeconds()*timeSpeed;
             secSinceSpawn = secSinceSpawn + dt;
-            fireDelay = fireDelay - dt;
+            secSinceFiring = secSinceFiring - dt;
             bossTimer = bossTimer - dt;
 
             guiObject.setLevelsTxt(playerObject);
@@ -94,17 +94,17 @@ int main()
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
             {
                 if(playerObject.m_movementSpeed < maxSpeed) {playerObject.m_movementSpeed += playerObject.m_acceleration*dt/2; }
-                playerObject.movePlayer(dt,playerObject.m_movementSpeed);
+                playerObject.movePlayer(dt, playerObject.m_movementSpeed);
             }
             if(!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && playerObject.m_movementSpeed > 0)
             {
                 playerObject.m_movementSpeed -= deacceleration*dt/2;
                 playerObject.movePlayer(dt,playerObject.m_movementSpeed);
             }
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && fireDelay <= 0)
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && secSinceFiring <= 0)
             {
                 projectiles.emplace_back(Projectile(playerObject.getGunRectXPos(), playerObject.getGunRectYPos(), playerObject.sprite.getRotation()));
-                fireDelay = fireDelayOriginal;
+                secSinceFiring = fireDelay;
             }
             
 
@@ -187,7 +187,7 @@ int main()
                 }
             }
 
-            for (auto& curr_projectile : projectiles) {curr_projectile.moveProjectile(dt, 30); }
+            for (auto& curr_projectile : projectiles) {curr_projectile.moveProjectile(dt, projectileSpeed); }
     
             // handle asteroid (target) interactions
             for(auto& curr_target : targets)
@@ -236,7 +236,7 @@ int main()
                 {
                     if(curr_drop.dropType == curr_drop.firerate)
                     {
-                        fireDelayOriginal -= 0.02;
+                        fireDelay -= 0.02;
                         ++playerObject.firerateLvl;
                         curr_drop.pickedUp = true;
                     }
@@ -262,7 +262,7 @@ int main()
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {playerObject.handleAnimationForward(); }
             else
             {
-                playerObject.sprite.setTextureRect({{0,0},{playerObject.m_FRAME_WIDTH, playerObject.m_FRAME_HEIGHT}});
+                playerObject.sprite.setTextureRect({sf::Vector2i{0,0}, {playerObject.m_FRAME_WIDTH, playerObject.m_FRAME_HEIGHT}});
                 playerObject.texWidth = 0;
                 playerObject.texTimer = 0;
             }
@@ -272,12 +272,13 @@ int main()
 
             //DRAWING
             window.draw(guiObject.backgSprite);
-            for(unsigned int i {0};i<targets.size();++i)
+
+            for(Target& curr_target: targets)
             {
-                if(!(targets[i].wasClicked))
+                if(!(curr_target.wasClicked))
                 {
-                    window.draw(targets[i].shape);
-                    targets[i].secondsExisted += dt;
+                    window.draw(curr_target.shape);
+                    curr_target.secondsExisted += dt;
                 }
             }
 
@@ -291,44 +292,22 @@ int main()
 
             }
 
-            for(unsigned int i {0};i<projectiles.size();++i)
+            for(Projectile& curr_projectile : projectiles)
             {
-                projectiles[i].lifetime = projectiles[i].lifetime + dt;
-                if(projectiles[i].lifetime <= maxLifetime && !projectiles[i].blickSum)
-                {
-                    window.draw(projectiles[i].shape);
-                }
-
+                curr_projectile.lifetime += dt;
+                if(curr_projectile.lifetime <= maxLifetime && !curr_projectile.blickSum) {window.draw(curr_projectile.shape); }
             }
 
-            for(unsigned int i {0}; i<boss.size(); ++i)
-                {
-                    window.draw(boss[i].shape);
-                }
+            if (bossTimer <= 0) {window.draw(boss[0].shape);}
 
-
-            projectiles.erase(
-                std::remove_if(
-                    projectiles.begin(),
-                    projectiles.end(),
-                    [](const Projectile& proj) { return proj.lifetime > 3.0f; }
-                ),
-                projectiles.end()
-            );
-
-            targets.erase(
-                std::remove_if(
-                    targets.begin(),
-                    targets.end(),
-                    [](const Target& target) { return target.wasClicked; }
-                ),
-                targets.end()
-            );
+            // projectiles and targets cleanup
+            std::erase_if(projectiles, [](const Projectile& proj) {return proj.lifetime > maxProjectileLifetime; });
+            std::erase_if(targets, [](const Target& target) {return target.wasClicked; });
 
             clock.restart();
 
             window.draw(playerObject.sprite);
-            window.draw(asteroidSpawn);
+
             window.draw(guiObject.hudTxt);
             window.draw(guiObject.hpTxt);
             window.draw(guiObject.firerateTxt);
@@ -339,14 +318,10 @@ int main()
                 window.draw(guiObject.ambatuTxt);
                 window.draw(guiObject.againBtnTxt);
             }
-            if(bossTimer < 301 && bossTimer > 0)
-            {
-                window.draw(guiObject.timerTxt);
-            }
+
+            if(bossTimer < 301 && bossTimer > 0) {window.draw(guiObject.timerTxt);}
 
             window.display();
-
         }
     }
-
 }

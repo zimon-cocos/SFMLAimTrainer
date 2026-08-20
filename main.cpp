@@ -79,14 +79,13 @@ int main()
 
                 playerObject.reset(Constants::width / 2, Constants::height / 2);
 
+                currState = GameState::playing;
 
             }
         }
 
         if (currState == GameState::playing)
         {
-
-
 
             sf::Time timeElapsed = clock.getElapsedTime();
             dt = timeElapsed.asSeconds() * Constants::timeSpeed;
@@ -166,7 +165,7 @@ int main()
                 {
                     if(playerObject.health - Constants::bossDamage <= 0)
                     {
-                        currState == GameState::blewUp;
+                        currState = GameState::blewUp;
                         std::cout << "Kaboom\n";
                     }
                     playerObject.health -= Constants::bossDamage;
@@ -212,11 +211,11 @@ int main()
             // handle drop interactions
             for(auto& curr_drop: drops)
             {
-                if(curr_drop.shape.getGlobalBounds().findIntersection(playerObject.sprite.getGlobalBounds()) && !curr_drop.pickedUp)
+                if(!curr_drop.pickedUp && curr_drop.shape.getGlobalBounds().findIntersection(playerObject.sprite.getGlobalBounds()) )
                 {
                     if(curr_drop.dropType == curr_drop.firerate)
                     {
-                        Attributes::fireDelay -= 0.02;
+                        Attributes::fireDelay -= 0.02f;
                         ++playerObject.firerateLvl;
                         curr_drop.pickedUp = true;
                     }
@@ -233,7 +232,6 @@ int main()
                     }
                 }
             }
-
 
             //ANIMACIE
 

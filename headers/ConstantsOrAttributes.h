@@ -18,10 +18,10 @@ namespace Constants
     inline constexpr float maxLifetime {4.0f};    
 
     inline constexpr int bossDamage {1000};
-    inline float bossSpeed {0.2};    
+    inline float bossSpeed {0.2f};    
 
     inline constexpr float maxTargetLifetime {15.0f};  
-    inline constexpr float targSpeed {0.15};   
+    inline constexpr float targSpeed {0.15f};   
     inline constexpr int astDamage {10};    
 
     inline constexpr int projectileSpeed {30};

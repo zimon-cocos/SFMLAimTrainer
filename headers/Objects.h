@@ -113,7 +113,6 @@ struct Player
 
     void reset(float startX, float startY)
     {
-        blewUp = false;
         health = 100;
         firerateLvl = 1;
         accLvl = 1;
@@ -122,9 +121,6 @@ struct Player
         m_acceleration = 0;
     }
 
-    
-
-    bool blewUp {false};
     sf::Sprite sprite{shipTexture};
 
     int texWidth {0};

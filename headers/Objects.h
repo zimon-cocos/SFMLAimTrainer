@@ -31,10 +31,8 @@ struct Drop
     Drop(float xDrop, float yDrop)
     {
         dropType = Random::get(0,2);
-        shape.setSize({40.0f,40.0f});
+        shape.setSize({30.0f, 30.0f});
         shape.setFillColor(sf::Color::Transparent);
-        shape.setOutlineColor(sf::Color::White);
-        shape.setOutlineThickness(2.0f);
         shape.setPosition({xDrop,yDrop});
         sprite.setPosition({xDrop+5,yDrop+5});
 
@@ -64,16 +62,41 @@ struct Player
 
     void handleScreenWrapping()
     {
-        if (sprite.getPosition().x > width + 50)    {sprite.setPosition({-50.0f, sprite.getPosition().y});}
-        if (sprite.getPosition().y > height + 50)   {sprite.setPosition({sprite.getPosition().x, -50.0});}
-        if (sprite.getPosition().x < -50.0)         {sprite.setPosition({width + 50, sprite.getPosition().y});}
-        if (sprite.getPosition().y < -50.0)         {sprite.setPosition({sprite.getPosition().x, height + 50});}      
+        if (sprite.getPosition().x > Constants::width + 50)    {sprite.setPosition({-50.0f, sprite.getPosition().y});}
+        if (sprite.getPosition().y > Constants::height + 50)   {sprite.setPosition({sprite.getPosition().x, -50.0});}
+        if (sprite.getPosition().x < -50.0)         {sprite.setPosition({Constants::width + 50, sprite.getPosition().y});}
+        if (sprite.getPosition().y < -50.0)         {sprite.setPosition({sprite.getPosition().x, Constants::height + 50});}      
     }
 
-    void movePlayer(float dt, int movementSpeed)
+    void movePlayer(float dt)
     {
-            sprite.move({movementSpeed*(40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180))) * dt,
-                         movementSpeed*(40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180))) * dt});
+            sprite.move({m_movementSpeed*(40*std::sin(degToRad(-sprite.getRotation().asDegrees()+180))) * dt,
+                         m_movementSpeed*(40*std::cos(degToRad(-sprite.getRotation().asDegrees()+180))) * dt});
+    }
+
+    void handleMovement(sf::Keyboard::Key pressedKey, float dt)
+    {
+        switch (pressedKey)
+        {
+            case (sf::Keyboard::Key::A) :
+            {
+                this->rotatePlayer(-1, dt, m_rotationSpeed);
+                return;
+            }
+            case (sf::Keyboard::Key::D) :
+            {
+                this->rotatePlayer(1, dt, m_rotationSpeed);
+                return;
+            }
+            case (sf::Keyboard::Key::W) :
+            {
+                if(this->m_movementSpeed < m_maxMovementSpeed) {this->m_movementSpeed += this->m_acceleration*dt/2; }
+                this->movePlayer(dt);
+                return;
+            }
+            default: std::cerr << "Incorrect movement input key\n";
+
+        }
     }
     
     void handleAnimationForward()
@@ -111,8 +134,13 @@ struct Player
     int accLvl {1};
     int firerateLvl {1};
 
+    float m_maxMovementSpeed {10};
+
     float m_movementSpeed {0};
+    float m_rotationSpeed {300};
     float m_acceleration {12};
+    float m_deacceleration {12};
+
 
     int m_FRAME_WIDTH {50};
     int m_FRAME_HEIGHT {80};
@@ -184,13 +212,11 @@ struct Target
         shape.setOrigin(shape.getGeometricCenter());
     }
 
-
-
-    void moveTarget(float dt) {shape.move({xMoveVector * dt * targSpeed, yMoveVector * dt * targSpeed}); }
+    void moveTarget(float dt) {shape.move({xMoveVector * dt * Constants::targSpeed, yMoveVector * dt * Constants::targSpeed}); }
 
     int targetExpiredOrNot() // has to be int, the return value is added to missed asteroids count
     {
-        if ((secondsExisted > maxTargetLifetime) && !(wasClicked))
+        if ((secondsExisted > Constants::maxTargetLifetime) && !(wasClicked))
         {
             wasClicked = true;
             return 1;
@@ -201,7 +227,7 @@ struct Target
 
 struct Boss : public Target
 {
-
+    enum Stages {second, final};
     float xTarget {0};
     float yTarget {0};
 
@@ -218,10 +244,27 @@ struct Boss : public Target
         xMoveVector = 5*(playerObject.sprite.getPosition().x - xTarget);
         yMoveVector = 5*(playerObject.sprite.getPosition().y - yTarget);
         
-        shape.move({xMoveVector*dt*bossSpeed,yMoveVector*dt*bossSpeed});
-        xTarget = xTarget + xMoveVector*dt*bossSpeed;
-        yTarget = yTarget + yMoveVector*dt*bossSpeed;
+        shape.move({xMoveVector * dt * Constants::bossSpeed, yMoveVector * dt * Constants::bossSpeed});
+        xTarget = xTarget + xMoveVector* dt * Constants::bossSpeed;
+        yTarget = yTarget + yMoveVector * dt * Constants::bossSpeed;
     }
+
+    void setStage(Stages stageToSet)
+    {
+        if (stageToSet == second)
+        {
+            shape.setRadius(50);
+            shape.setTextureRect(sf::IntRect({0,0}, {100,100}));
+            shape.setTexture(&bossM);
+        }
+        else
+        {
+            shape.setRadius(25);
+            shape.setTextureRect(sf::IntRect({0,0}, {50,50}));
+            shape.setTexture(&bossS);
+        }
+    }
+
 };
 
 struct GUI
@@ -246,38 +289,38 @@ struct GUI
         hudTxt.setString("It works");
         hudTxt.setCharacterSize(24);
         hudTxt.setFillColor(sf::Color::Red);
-        hudTxt.setPosition({width/2 - 80,30});
+        hudTxt.setPosition({Constants::width / 2 - 80, 30});
 
         timerTxt.setString("placeholder");
         timerTxt.setCharacterSize(30);
         timerTxt.setFillColor(sf::Color::Red);
-        timerTxt.setPosition({width/2-120,60});    
+        timerTxt.setPosition({Constants::width / 2 - 120, 60});    
         
         hpTxt.setString("placeholder");
         hpTxt.setCharacterSize(24);
         hpTxt.setFillColor(sf::Color::Red);
-        hpTxt.setPosition({675,30});
+        hpTxt.setPosition({675, 30});
       
         accTxt.setString("placeholder");
         accTxt.setCharacterSize(24);
         accTxt.setFillColor(sf::Color::Red);
-        accTxt.setPosition({675,50});
+        accTxt.setPosition({675, 50});
 
 
         firerateTxt.setString("placeholder");
         firerateTxt.setCharacterSize(24);
         firerateTxt.setFillColor(sf::Color::Red);
-        firerateTxt.setPosition({675,70});
+        firerateTxt.setPosition({675, 70});
 
 
         ambatuTxt.setString("You blew up!");
         ambatuTxt.setCharacterSize(48);
         ambatuTxt.setFillColor(sf::Color::Magenta);
-        ambatuTxt.setPosition({width/2-100,height/2-100});
+        ambatuTxt.setPosition({Constants::width/2-100, Constants::height/2-100});
 
 
         againBtn.setSize({290.0f,40.0f});
-        againBtn.setPosition({width/2-100-30,height/2-100 + 72});
+        againBtn.setPosition({Constants::width/2-100-30, Constants::height/2-100 + 72});
         againBtn.setFillColor(sf::Color::Transparent);
         againBtn.setOutlineThickness(2.0f);
         againBtn.setOutlineColor(sf::Color::Red);
@@ -286,7 +329,7 @@ struct GUI
         againBtnTxt.setString("Play again?");
         againBtnTxt.setCharacterSize(72);
         againBtnTxt.setFillColor(sf::Color::Magenta);
-        againBtnTxt.setPosition({width/2-100-30,height/2-100 +40});
+        againBtnTxt.setPosition({Constants::width/2-100-30, Constants::height/2-100 +40});
     }
 
     void setLevelsTxt(Player& playerObject)
@@ -295,7 +338,4 @@ struct GUI
         accTxt.setString("Aceleration level: " + std::to_string(playerObject.accLvl));
         firerateTxt.setString("Firerate level: " + std::to_string(playerObject.firerateLvl));    
     }
-
-
-
 };

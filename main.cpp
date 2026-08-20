@@ -1,43 +1,60 @@
 #include <iostream>
 #include <algorithm>
-#include <cstdlib>
 #include <vector>
-#include <cmath>
 
 #include <SFML/Graphics.hpp>
 #include "headers/Random.h"
 #include "headers/Objects.h"
-#include "headers/Functions.h"
-#include "headers/ConstantsOrAttributes.h"
-
 
 int main()
 {
-    Player playerObject{};
 
+    enum class GameState
+    {
+        playing,
+        blewUp
+    };
+
+
+    Player playerObject{};
+    
     std::vector<Drop> drops;    
     std::vector<Projectile> projectiles;
     std::vector<Target> targets;
+
+    projectiles.reserve(200); 
+    targets.reserve(100);
+    drops.reserve(50);
+
     std::vector<Boss> boss;
 
-
     sf::CircleShape asteroidSpawn;
-    asteroidSpawn.setRadius(spawnRadius);
+    asteroidSpawn.setRadius(Constants::spawnRadius);
     asteroidSpawn.setFillColor(sf::Color::Transparent);
-    asteroidSpawn.setOutlineColor(sf::Color::Blue);
-    asteroidSpawn.setOutlineThickness(2.0f);
     asteroidSpawn.setOrigin(asteroidSpawn.getGeometricCenter());
     asteroidSpawn.setPosition({playerObject.sprite.getPosition().x, playerObject.sprite.getPosition().y});
 
-    sf::RenderWindow window (sf::VideoMode({width,height}),"Asteroids");
-    window.setFramerateLimit(framerate);
+    sf::RenderWindow window (sf::VideoMode({Constants::width, Constants::height}),"Asteroids");
+    window.setFramerateLimit(Constants::framerate);
 
     GUI guiObject{};
+
     sf::Clock clock;
     float dt {0};
 
+    GameState currState = GameState::playing;
     while(window.isOpen())
     {
+
+        while(const std::optional event = window.pollEvent())
+        {
+            if(event->is<sf::Event::Closed>()) {window.close(); }
+            else if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) 
+            {
+                if(keyPressed->scancode == sf::Keyboard::Scancode::Escape) {window.close(); }
+            }
+        }
+        
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
         {
             auto mousePos = sf::Mouse::getPosition(window);
@@ -47,107 +64,89 @@ int main()
             if(guiObject.againBtn.getGlobalBounds().contains(transMousePos))
             {
 
-                score = 0;
-                previousScore = 0;
-                missed = 0;
-                fireDelay = 0.25;
-                bossTimer = 6*60;
-                bossSpawned = false;
-                spawnAsteroidInterval = 2;
+                Attributes::score = 0;
+                Attributes::previousScore = 0;
+                Attributes::missed = 0;
+                Attributes::fireDelay = 0.25;
+                Attributes::bossTimer = 6*60;
+                Attributes::bossSpawned = false;
+                Attributes::spawnAsteroidInterval = 2;
 
                 boss.clear();
                 targets.clear();
                 projectiles.clear();
                 drops.clear();
 
-                playerObject.reset(width / 2, height / 2);
+                playerObject.reset(Constants::width / 2, Constants::height / 2);
 
 
             }
         }
 
-        while(!playerObject.blewUp)
+        if (currState == GameState::playing)
         {
 
+
+
             sf::Time timeElapsed = clock.getElapsedTime();
-            dt = timeElapsed.asSeconds()*timeSpeed;
-            secSinceSpawn = secSinceSpawn + dt;
-            secSinceFiring = secSinceFiring - dt;
-            bossTimer = bossTimer - dt;
+            dt = timeElapsed.asSeconds() * Constants::timeSpeed;
+            Attributes::secSinceSpawn = Attributes::secSinceSpawn + dt;
+            Attributes::secSinceFiring = Attributes::secSinceFiring - dt;
+            Attributes::bossTimer = Attributes::bossTimer - dt;
 
             guiObject.setLevelsTxt(playerObject);
 
-            if(static_cast<int>(bossTimer)%60<10)
+            if(static_cast<int>(Attributes::bossTimer)%60 < 10)
             {
-                guiObject.timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(bossTimer)/60) + ":0" + std::to_string(static_cast<int>(bossTimer)%60));
+                guiObject.timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(Attributes::bossTimer)/60) + ":0" + std::to_string(static_cast<int>(Attributes::bossTimer)%60));
             }
             else
             {
-                guiObject.timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(bossTimer)/60) + ":" + std::to_string(static_cast<int>(bossTimer)%60));
+                guiObject.timerTxt.setString("The lord is here in: " + std::to_string(static_cast<int>(Attributes::bossTimer)/60) + ":" + std::to_string(static_cast<int>(Attributes::bossTimer)%60));
             }
 
             playerObject.handleScreenWrapping();
 
             // player movement and shooting handling
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {playerObject.rotatePlayer(-1, dt, rotationSpeed); }
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {playerObject.rotatePlayer(1, dt, rotationSpeed); }
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
-            {
-                if(playerObject.m_movementSpeed < maxSpeed) {playerObject.m_movementSpeed += playerObject.m_acceleration*dt/2; }
-                playerObject.movePlayer(dt, playerObject.m_movementSpeed);
-            }
-            if(!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && playerObject.m_movementSpeed > 0)
-            {
-                playerObject.m_movementSpeed -= deacceleration*dt/2;
-                playerObject.movePlayer(dt,playerObject.m_movementSpeed);
-            }
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && secSinceFiring <= 0)
-            {
-                projectiles.emplace_back(Projectile(playerObject.getGunRectXPos(), playerObject.getGunRectYPos(), playerObject.sprite.getRotation()));
-                secSinceFiring = fireDelay;
-            }
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {playerObject.handleMovement(sf::Keyboard::Key::A, dt); }
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {playerObject.handleMovement(sf::Keyboard::Key::D, dt); }
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {playerObject.handleMovement(sf::Keyboard::Key::W, dt); }
             
 
-            while(const std::optional event = window.pollEvent())
+            if(!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && playerObject.m_movementSpeed > 0)
             {
-                if(event->is<sf::Event::Closed>())
-                {
-                    playerObject.blewUp = true;
-                    window.close();
-                }
-                else if(const auto*keyPressed = event->getIf<sf::Event::KeyPressed>())
-                {
-                    if(keyPressed->scancode == sf::Keyboard::Scancode::Escape)
-                    {
-                        playerObject.blewUp = true;
-                        window.close();
-                    }
-                }
+                playerObject.m_movementSpeed -= playerObject.m_deacceleration*dt/2;
+                playerObject.movePlayer(dt);
+            }
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && Attributes::secSinceFiring <= 0)
+            {
+                projectiles.emplace_back(Projectile(playerObject.getGunRectXPos(), playerObject.getGunRectYPos(), playerObject.sprite.getRotation()));
+                Attributes::secSinceFiring = Attributes::fireDelay;
             }
 
-            guiObject.hudTxt.setString("Score: " + std::to_string(score) + " Missed: " + std::to_string(missed));
+            guiObject.hudTxt.setString("Score: " + std::to_string(Attributes::score) + " Missed: " + std::to_string(Attributes::missed));
 
-            spawnAsteroidInterval = spawnAsteroidInterval - difIncrease * dt;
-            if(secSinceSpawn > spawnAsteroidInterval && bossTimer > 0)
+            Attributes::spawnAsteroidInterval = Attributes::spawnAsteroidInterval - Constants::difIncrease * dt;
+            if(Attributes::secSinceSpawn > Attributes::spawnAsteroidInterval && Attributes::bossTimer > 0)
             {
                 int ranDegree = Random::get(0, 360);
-                targets.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+playerObject.sprite.getPosition().x,spawnRadius*std::cos(degToRad(ranDegree)) + playerObject.sprite.getPosition().y,100);
+                targets.emplace_back(Constants::spawnRadius*std::sin(degToRad(ranDegree))+playerObject.sprite.getPosition().x, Constants::spawnRadius*std::cos(degToRad(ranDegree)) + playerObject.sprite.getPosition().y,100);
 
                 targets.back().xMoveVector = (playerObject.sprite.getPosition().x - targets.back().shape.getPosition().x);
                 targets.back().yMoveVector = (playerObject.sprite.getPosition().y - targets.back().shape.getPosition().y);
 
-                secSinceSpawn = 0;
+                Attributes::secSinceSpawn = 0;
             }
 
-            if(bossTimer < 0 && bossSpawned == false)
+            if(Attributes::bossTimer < 0 && !Attributes::bossSpawned)
             {
-                bossSpawned = true;
+                Attributes::bossSpawned = true;
                 int ranDegree = Random::get(0,360);
-                boss.emplace_back(spawnRadius*std::sin(degToRad(ranDegree))+playerObject.sprite.getPosition().x,spawnRadius*std::cos(degToRad(ranDegree)) + playerObject.sprite.getPosition().y,100);
+                boss.emplace_back(Constants::spawnRadius*std::sin(degToRad(ranDegree))+playerObject.sprite.getPosition().x, Constants::spawnRadius*std::cos(degToRad(ranDegree)) + playerObject.sprite.getPosition().y,100);
 
             }
 
-            if(bossSpawned == true)
+            if(Attributes::bossSpawned)
             {
                 boss[0].moveBoss(dt, playerObject);
 
@@ -156,21 +155,8 @@ int main()
                     if(curr_projectile.shape.getGlobalBounds().findIntersection(boss[0].shape.getGlobalBounds()) && !curr_projectile.blickSum)
                     {
                         boss[0].health -= 1;
-                        std::cerr << "Boss health: " << boss[0].health << '\n';
-
-                        if(boss[0].health < 250)
-                        {
-                            boss[0].shape.setRadius(50);
-                            boss[0].shape.setTextureRect(sf::IntRect({0,0}, {100,100}));
-                            boss[0].shape.setTexture(&bossM);
-                        }
-                        if(boss[0].health < 100)
-                        {
-                            boss[0].shape.setRadius(25);
-                            boss[0].shape.setTextureRect(sf::IntRect({0,0}, {50,50}));
-                            boss[0].shape.setTexture(&bossS);
-                        }
-
+                        if(boss[0].health < 250) {boss[0].setStage(Boss::second); }
+                        if(boss[0].health < 100) {boss[0].setStage(Boss::final); }
                         curr_projectile.blickSum = true;
                     }
                 }
@@ -178,31 +164,30 @@ int main()
                 // Collisions for boss
                 if(boss[0].shape.getGlobalBounds().findIntersection(playerObject.sprite.getGlobalBounds()))
                 {
-                    if(playerObject.health - bossDamage <= 0)
+                    if(playerObject.health - Constants::bossDamage <= 0)
                     {
-                        playerObject.blewUp = true;
+                        currState == GameState::blewUp;
                         std::cout << "Kaboom\n";
                     }
-                    playerObject.health -= bossDamage;
+                    playerObject.health -= Constants::bossDamage;
                 }
             }
 
-            for (auto& curr_projectile : projectiles) {curr_projectile.moveProjectile(dt, projectileSpeed); }
+            for (auto& curr_projectile : projectiles) {curr_projectile.moveProjectile(dt, Constants::projectileSpeed); }
     
             // handle asteroid (target) interactions
             for(auto& curr_target : targets)
             {
                 curr_target.moveTarget(dt);
-                missed += curr_target.targetExpiredOrNot();
-
+                Attributes::missed += curr_target.targetExpiredOrNot();
 
                 for(auto& curr_projectile : projectiles)
                 {
-                    if(curr_projectile.shape.getGlobalBounds().findIntersection(curr_target.shape.getGlobalBounds()) && !curr_projectile.blickSum)
+                    if(!curr_projectile.blickSum && curr_projectile.shape.getGlobalBounds().findIntersection(curr_target.shape.getGlobalBounds()))
                     {
-                        score += 10;
+                        Attributes::score += 10;
                         curr_target.wasClicked = true;
-                        if(score % 100 == 0) {drops.emplace_back(curr_target.shape.getPosition().x, curr_target.shape.getPosition().y); }
+                        if(Attributes::score % 100 == 0) {drops.emplace_back(curr_target.shape.getPosition().x, curr_target.shape.getPosition().y); }
 
                         if(curr_target.radius > 25)
                         {
@@ -214,18 +199,13 @@ int main()
                     }
                 }
 
-                if(!playerObject.blewUp)
+                if(currState == GameState::playing)
                 {
-                    if(curr_target.shape.getGlobalBounds().findIntersection(playerObject.sprite.getGlobalBounds()) && !curr_target.wasClicked)
+                    if(!curr_target.wasClicked && curr_target.shape.getGlobalBounds().findIntersection(playerObject.sprite.getGlobalBounds()) )
                     {
                         curr_target.wasClicked = true;
-                        if(playerObject.health - astDamage <= 0)
-                        {
-                            playerObject.blewUp = true;
-                            std::cout << "Kaboom\n";
-                        }
-                        playerObject.health -= astDamage;
-
+                        if(playerObject.health - Constants::astDamage <= 0) {currState = GameState::blewUp; }
+                        playerObject.health -= Constants::astDamage;
                     }
                 }
             }
@@ -236,18 +216,18 @@ int main()
                 {
                     if(curr_drop.dropType == curr_drop.firerate)
                     {
-                        fireDelay -= 0.02;
+                        Attributes::fireDelay -= 0.02;
                         ++playerObject.firerateLvl;
                         curr_drop.pickedUp = true;
                     }
                     if(curr_drop.dropType == curr_drop.armor)
                     {
-                        playerObject.health += astDamage;
+                        playerObject.health += Constants::astDamage;
                         curr_drop.pickedUp = true;
                     }
                     if(curr_drop.dropType == curr_drop.acceleration)
                     {
-                        acceleration += 2;
+                        playerObject.m_acceleration += 2;
                         ++playerObject.accLvl;
                         curr_drop.pickedUp = true;
                     }
@@ -295,13 +275,13 @@ int main()
             for(Projectile& curr_projectile : projectiles)
             {
                 curr_projectile.lifetime += dt;
-                if(curr_projectile.lifetime <= maxLifetime && !curr_projectile.blickSum) {window.draw(curr_projectile.shape); }
+                if(curr_projectile.lifetime <= Constants::maxLifetime && !curr_projectile.blickSum) {window.draw(curr_projectile.shape); }
             }
 
-            if (bossTimer <= 0) {window.draw(boss[0].shape);}
+            if (Attributes::bossTimer <= 0) {window.draw(boss[0].shape);}
 
             // projectiles and targets cleanup
-            std::erase_if(projectiles, [](const Projectile& proj) {return proj.lifetime > maxProjectileLifetime; });
+            std::erase_if(projectiles, [](const Projectile& proj) {return proj.lifetime > Constants::maxProjectileLifetime; });
             std::erase_if(targets, [](const Target& target) {return target.wasClicked; });
 
             clock.restart();
@@ -313,13 +293,13 @@ int main()
             window.draw(guiObject.firerateTxt);
             window.draw(guiObject.accTxt);
 
-            if(playerObject.blewUp)
+            if(currState == GameState::blewUp)
             {
                 window.draw(guiObject.ambatuTxt);
                 window.draw(guiObject.againBtnTxt);
             }
 
-            if(bossTimer < 301 && bossTimer > 0) {window.draw(guiObject.timerTxt);}
+            if(Attributes::bossTimer < 301 && Attributes::bossTimer > 0) {window.draw(guiObject.timerTxt);}
 
             window.display();
         }
